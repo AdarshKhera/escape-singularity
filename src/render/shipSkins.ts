@@ -42,10 +42,12 @@ function damagedPrefix(prefix: string, tier: DamageTier): string {
   return tier === 'full' ? prefix : `${prefix}_${tier}`
 }
 
+const SHIP_BASE = `${import.meta.env.BASE_URL}assets/ship/`
+
 export function shipThrustFrameSrc(prefix: string, tier: DamageTier, index: number): string {
-  return `/assets/ship/${damagedPrefix(prefix, tier)}_thrust_${index}.png`
+  return `${SHIP_BASE}${damagedPrefix(prefix, tier)}_thrust_${index}.png`
 }
 
 export function shipIdleSrc(prefix: string, tier: DamageTier): string {
-  return `/assets/ship/${damagedPrefix(prefix, tier)}_idle.png`
+  return `${SHIP_BASE}${damagedPrefix(prefix, tier)}_idle.png`
 }

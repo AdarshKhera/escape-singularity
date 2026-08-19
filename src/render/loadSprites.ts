@@ -7,8 +7,8 @@ import {
   type DamageTier,
 } from './shipSkins'
 
-const CELESTIAL_BASE = '/assets/celestial/'
-const WEAPON_BASE = '/assets/weapons/'
+const CELESTIAL_BASE = `${import.meta.env.BASE_URL}assets/celestial/`
+const WEAPON_BASE = `${import.meta.env.BASE_URL}assets/weapons/`
 const PLANET_SPRITE_COUNT = 12
 const SHIELD_FRAME_COUNT = 12
 const MOON_SPRITE_COUNT = 8
