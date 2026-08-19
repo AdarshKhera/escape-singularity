@@ -27,6 +27,15 @@ function smoothstep(t: number): number {
   return c * c * (3 - 2 * c)
 }
 
+// The hard ceiling on zoom: past this, a ship at the full lateral bound no
+// longer fits the visible band, regardless of what framing effect wants a
+// tighter shot. Every other scale in this file is allowed to zoom in for
+// drama, but never past this line.
+function computeVerticalFit(height: number): number {
+  const usableHeight = Math.max(height - TOP_UI_MARGIN_PX, 1)
+  return (usableHeight * 0.46) / LANE_BOUND
+}
+
 // The framing the approach settles into: both escape lanes must fit vertically
 // and the whole hole must sit on screen when the player has to commit. Takes
 // the hole's actual radius so a bigger-than-usual hole (a level's second,
@@ -36,8 +45,7 @@ export function computeApproachScale(
   height: number,
   holeRadius: number = BLACK_HOLE_RADIUS,
 ): number {
-  const usableHeight = Math.max(height - TOP_UI_MARGIN_PX, 1)
-  const verticalFit = (usableHeight * 0.46) / LANE_BOUND
+  const verticalFit = computeVerticalFit(height)
   const horizontalFit = (width * 0.52) / (REFERENCE_SPEED * 10)
   const holeFit = (width * 0.44) / holeRadius
   return Math.min(verticalFit, horizontalFit, holeFit)
@@ -65,7 +73,9 @@ export function computeCameraScale(
     return CRUISE_SCALE + (approachScale - CRUISE_SCALE) * t
   }
 
-  if (shipWorldX < layout.escapeClearX) return approachScale * struggleMultiplier
+  if (shipWorldX < layout.escapeClearX) {
+    return Math.min(approachScale * struggleMultiplier, computeVerticalFit(height))
+  }
 
   const t = smoothstep(
     (shipWorldX - layout.escapeClearX) / (layout.levelEndX - layout.escapeClearX),
