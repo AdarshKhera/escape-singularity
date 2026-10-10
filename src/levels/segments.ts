@@ -1,7 +1,7 @@
 import { BLACK_HOLE_RADIUS, computeLevelLayout } from './worldConfig'
 import type { HoleSegment, LevelDefinition } from './levelTypes'
 
-// One or two hole passages, chained end to end. Each is computed completely
+// One or more hole passages, chained end to end. Each is computed completely
 // independently via computeLevelLayout — the second just starts its own
 // cruise/approach/escape cycle right where the first one's ended (plus a
 // breather gap), so none of the single-hole physics has to know a second
@@ -17,16 +17,14 @@ export function computeLevelSegments(level: LevelDefinition): HoleSegment[] {
     },
   ]
 
-  if (level.secondHole) {
-    const second = computeLevelLayout(
-      first.levelEndX + level.secondHole.gapX,
-      level.secondHole.approachLeadSeconds,
-    )
+  for (const extra of level.extraHoles ?? []) {
+    const previous = segments[segments.length - 1]
+    const next = computeLevelLayout(previous.levelEndX + extra.gapX, extra.approachLeadSeconds)
     segments.push({
-      ...second,
-      holeRadius: BLACK_HOLE_RADIUS * level.secondHole.radiusMultiplier,
-      holeName: level.secondHole.name,
-      holeDescription: level.secondHole.description,
+      ...next,
+      holeRadius: BLACK_HOLE_RADIUS * extra.radiusMultiplier,
+      holeName: extra.name,
+      holeDescription: extra.description,
     })
   }
 

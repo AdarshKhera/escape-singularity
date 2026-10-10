@@ -1,10 +1,10 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level04: LevelDefinition = {
   id: 4,
-  name: 'Sol System — Inner Worlds',
+  name: 'Sol System: Inner Worlds',
   subtitle: 'The Sun long since collapsed',
   cruiseEndX: 22000,
   approachLeadSeconds: 12,
@@ -25,7 +25,7 @@ export const level04: LevelDefinition = {
         note: 'Closest world. No real atmosphere.',
         radius: PLANET_RADIUS * 0.55,
         spriteIndex: 1,
-        pullStrength: pullFromGravity(0.38),
+        surfaceGravity: 0.38,
       },
       {
         id: 'venus',
@@ -35,7 +35,7 @@ export const level04: LevelDefinition = {
         note: 'Thick sulfuric clouds. Hottest world by far.',
         radius: PLANET_RADIUS * 0.95,
         spriteIndex: 7,
-        pullStrength: pullFromGravity(0.9),
+        surfaceGravity: 0.9,
         escort: 'debris',
       },
       {
@@ -46,7 +46,7 @@ export const level04: LevelDefinition = {
         note: 'Home, once. Still blue from here.',
         radius: PLANET_RADIUS,
         spriteIndex: 9,
-        pullStrength: pullFromGravity(1.0),
+        surfaceGravity: 1.0,
         escort: 'moon',
       },
       {
@@ -57,7 +57,7 @@ export const level04: LevelDefinition = {
         note: 'Rust and thin, cold air.',
         radius: PLANET_RADIUS * 0.53,
         spriteIndex: 11,
-        pullStrength: pullFromGravity(0.38),
+        surfaceGravity: 0.38,
         escort: 'moon',
       },
     ],

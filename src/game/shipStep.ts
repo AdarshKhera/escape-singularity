@@ -1,8 +1,13 @@
-import { computeBlackHolePull, computePlanetPull } from '../physics/gravity'
+import { computeBlackHolePull, computePlanetAccelY, planetInfluenceRadius } from '../physics/gravity'
+import {
+  ION_FUEL_DRAIN_PER_SECOND,
+  ION_STEER_SCALE,
+  computeWellsAccelY,
+  isInIonCloud,
+} from '../physics/hazardFields'
 import {
   BOOST_SPEED_ADD,
   CRUISE_LANE_BOUND,
-  LANE_BOUND,
   LATERAL_DAMPING,
   PICKUP_BOOST_MULTIPLIER,
   REFERENCE_SPEED,
@@ -17,9 +22,10 @@ import {
   THRUST_FUEL_DRAIN_PER_SECOND,
   VICTORY_SPEED_MULTIPLIER,
   computeExitDrag,
-  computeOrbitOffset,
+  laneBoundForHole,
   type LevelPhase,
 } from '../levels/worldConfig'
+import { planetWorldY } from '../levels/planetMotion'
 import type { HoleSegment, LevelDefinition } from '../levels/levels'
 
 // The ship's flight model as a pure function of (state, controls, world).
@@ -41,23 +47,33 @@ export interface ShipControls {
   boosting: boolean
   /** picked-up speed booster active */
   pickupBoosting: boolean
+  /** temporary extra top speed (planet slingshot), u/s */
+  extraSpeed?: number
 }
 
 export interface ShipEnvironment {
   level: LevelDefinition
   layout: HoleSegment
   phase: LevelPhase
-  /** seconds, drives planet orbits */
+  /** game seconds; drives planet orbits, rogue planets and well pulses */
   time: number
 }
 
 // Fuel drains from thrusting and from steering — braking is the only free
-// state. A picked-up booster makes thrust free for its duration.
-export function computeFuelDrainRate(controls: ShipControls): number {
+// state. A picked-up booster makes thrust free for its duration, ion clouds
+// bleed the tank regardless, and the automatic victory burn once clear is
+// free (holding the throttle there changes nothing, so it shouldn't cost).
+export function computeFuelDrainRate(
+  controls: ShipControls,
+  env: ShipEnvironment,
+  ship: ShipKinematics,
+): number {
+  if (env.phase === 'clear') return 0
   const thrustDrain =
     controls.throttle > 0 && !controls.pickupBoosting ? THRUST_FUEL_DRAIN_PER_SECOND : 0
   const steerDrain = controls.bank !== 0 ? STEER_FUEL_DRAIN_PER_SECOND : 0
-  return thrustDrain + steerDrain
+  const ionDrain = isInIonCloud(env.level, ship.worldX, ship.lateral) ? ION_FUEL_DRAIN_PER_SECOND : 0
+  return (thrustDrain + steerDrain) * (env.level.fuelDrainMultiplier ?? 1) + ionDrain
 }
 
 // Sum of every planet's lateral pull on the ship at this instant.
@@ -70,11 +86,11 @@ export function computePlanetsPullY(
 ): number {
   let pull = 0
   for (const planet of level.planets) {
-    const dxPlanet = shipWorldX - planet.worldX
-    const influence = planet.influenceRadius ?? planet.radius * 6
-    if (Math.abs(dxPlanet) >= influence) continue
-    const orbitY = planet.worldY + computeOrbitOffset(planet.worldX, blackHoleX, time, planet.worldX)
-    pull += computePlanetPull(lateral - orbitY, dxPlanet, planet.pullStrength)
+    const dx = shipWorldX - planet.worldX
+    const influence = planetInfluenceRadius(planet.radius, planet.influenceRadius)
+    if (Math.abs(dx) >= influence) continue
+    const dy = lateral - planetWorldY(planet, blackHoleX, time)
+    pull += computePlanetAccelY(dx, dy, planet.surfaceGravity, planet.radius, influence)
   }
   return pull
 }
@@ -82,7 +98,7 @@ export function computePlanetsPullY(
 // the camera can't follow this far off-centre before the approach opens up,
 // so cruise flight gets a tighter lane than the escape does
 export function laneBoundAt(shipWorldX: number, layout: HoleSegment): number {
-  return shipWorldX <= layout.revealStartX ? CRUISE_LANE_BOUND : LANE_BOUND
+  return shipWorldX <= layout.revealStartX ? CRUISE_LANE_BOUND : laneBoundForHole(layout.holeRadius)
 }
 
 function stepForwardSpeed(
@@ -91,12 +107,14 @@ function stepForwardSpeed(
   phase: LevelPhase,
   dt: number,
 ): number {
-  // both boost sources stack: a picked-up booster raises the floor, a
-  // double-tap on top of it pushes even faster rather than being capped
+  // every boost source stacks: a picked-up booster raises the floor, a
+  // double-tap or a slingshot on top of it pushes even faster
+  const extra = controls.extraSpeed ?? 0
   const speedCeiling =
     THROTTLE_MAX_SPEED +
     (controls.pickupBoosting ? THROTTLE_MAX_SPEED * (PICKUP_BOOST_MULTIPLIER - 1) : 0) +
-    (controls.boosting ? BOOST_SPEED_ADD : 0)
+    (controls.boosting ? BOOST_SPEED_ADD : 0) +
+    extra
 
   let speed = forwardSpeed
   if (phase === 'clear') {
@@ -109,7 +127,7 @@ function stepForwardSpeed(
   } else {
     speed += (THROTTLE_IDLE_SPEED - speed) * Math.min((THROTTLE_DECAY_RATE * dt) / REFERENCE_SPEED, 1)
   }
-  if (controls.boosting || controls.pickupBoosting) {
+  if (controls.boosting || controls.pickupBoosting || extra > 0) {
     speed = Math.min(speedCeiling, speed + THROTTLE_ACCEL_RATE * dt)
   }
   return speed
@@ -131,14 +149,17 @@ export function stepShip(
     level.pullRange,
   )
   const planetPullY = computePlanetsPullY(level, layout.blackHoleX, ship.worldX, ship.lateral, time)
-  const steerAccelY = controls.bank !== 0 && controls.hasFuel ? controls.bank * STEER_ACCEL : 0
+  const wellPullY = computeWellsAccelY(level, ship.worldX, ship.lateral, time)
+  const steerScale = isInIonCloud(level, ship.worldX, ship.lateral) ? ION_STEER_SCALE : 1
+  const steerAccelY =
+    controls.bank !== 0 && controls.hasFuel ? controls.bank * STEER_ACCEL * steerScale : 0
 
   // breaking free costs extra drag for a short stretch, so clearing the
   // hole takes visible effort rather than snapping to a fast coast
   const exitDrag = computeExitDrag(ship.worldX, layout.blackHoleX)
 
   let lateralVelocity = ship.lateralVelocity
-  lateralVelocity += (gravityPullY + planetPullY + steerAccelY) * dt
+  lateralVelocity += (gravityPullY + planetPullY + wellPullY + steerAccelY) * dt
   lateralVelocity -= lateralVelocity * LATERAL_DAMPING * (1 + exitDrag) * dt
 
   let lateral = ship.lateral + lateralVelocity * dt

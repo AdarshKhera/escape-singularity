@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level08: LevelDefinition = {
@@ -15,13 +15,15 @@ export const level08: LevelDefinition = {
   blockades: spreadBlockades(4, 5000, 37000),
   blackHoleName: 'The Rimward Dark',
   blackHoleDescription: 'Nobody has mapped what is past it.',
-  secondHole: {
-    gapX: 7000,
-    approachLeadSeconds: 21,
-    radiusMultiplier: 1.5,
-    name: "The Rim's End",
-    description: 'What the Rimward Dark was hiding. Larger than the first by far.',
-  },
+  extraHoles: [
+    {
+      gapX: 7000,
+      approachLeadSeconds: 21,
+      radiusMultiplier: 1.5,
+      name: "The Rim's End",
+      description: 'What the Rimward Dark was hiding. Larger than the first by far.',
+    },
+  ],
   ...buildPlanetSystem(
     [
       {
@@ -32,7 +34,7 @@ export const level08: LevelDefinition = {
         note: 'Nebula-lit, always twilight.',
         radius: PLANET_RADIUS * 1.15,
         spriteIndex: 2,
-        pullStrength: pullFromGravity(1.7),
+        surfaceGravity: 1.7,
         escort: 'debris',
       },
       {
@@ -43,7 +45,7 @@ export const level08: LevelDefinition = {
         note: 'Hollow-sounding when struck.',
         radius: PLANET_RADIUS * 0.7,
         spriteIndex: 5,
-        pullStrength: pullFromGravity(0.5),
+        surfaceGravity: 0.5,
       },
       {
         id: 'quietus',
@@ -53,7 +55,7 @@ export const level08: LevelDefinition = {
         note: 'No signal ever returned.',
         radius: PLANET_RADIUS * 1.3,
         spriteIndex: 11,
-        pullStrength: pullFromGravity(2.1),
+        surfaceGravity: 2.1,
         escort: 'moon',
       },
       {
@@ -64,7 +66,7 @@ export const level08: LevelDefinition = {
         note: 'Slush oceans, faint tides.',
         radius: PLANET_RADIUS * 0.9,
         spriteIndex: 8,
-        pullStrength: pullFromGravity(0.8),
+        surfaceGravity: 0.8,
         escort: 'debris',
       },
       {
@@ -75,7 +77,7 @@ export const level08: LevelDefinition = {
         note: 'Permanent eclipse world.',
         radius: PLANET_RADIUS * 1.4,
         spriteIndex: 4,
-        pullStrength: pullFromGravity(2.5),
+        surfaceGravity: 2.5,
         escort: 'moon',
       },
       {
@@ -86,7 +88,7 @@ export const level08: LevelDefinition = {
         note: 'Oceans mostly gone.',
         radius: PLANET_RADIUS * 0.75,
         spriteIndex: 7,
-        pullStrength: pullFromGravity(0.6),
+        surfaceGravity: 0.6,
       },
       {
         id: 'redoubt',
@@ -96,7 +98,7 @@ export const level08: LevelDefinition = {
         note: 'Fortress-like ridgelines.',
         radius: PLANET_RADIUS * 1.3,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(2.2),
+        surfaceGravity: 2.2,
         escort: 'debris',
       },
       {
@@ -107,7 +109,7 @@ export const level08: LevelDefinition = {
         note: 'Final outpost on the Rim.',
         radius: PLANET_RADIUS,
         spriteIndex: 6,
-        pullStrength: pullFromGravity(1.0),
+        surfaceGravity: 1.0,
         escort: 'moon',
       },
     ],

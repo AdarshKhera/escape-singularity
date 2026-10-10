@@ -1,10 +1,10 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level05: LevelDefinition = {
   id: 5,
-  name: 'Sol System — Outer Worlds',
+  name: 'Sol System: Outer Worlds',
   subtitle: 'Past the asteroid belt',
   cruiseEndX: 27000,
   approachLeadSeconds: 13,
@@ -25,7 +25,7 @@ export const level05: LevelDefinition = {
         note: 'A gas giant with no floor to land on. Largest world in the system.',
         radius: PLANET_RADIUS * 2.4,
         spriteIndex: 8,
-        pullStrength: pullFromGravity(2.5),
+        surfaceGravity: 2.5,
         escort: 'moon',
       },
       {
@@ -36,7 +36,7 @@ export const level05: LevelDefinition = {
         note: 'Rings of ice and rock, wider than the planet itself.',
         radius: PLANET_RADIUS * 2.1,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(1.1),
+        surfaceGravity: 1.1,
         escort: 'debris',
       },
       {
@@ -47,7 +47,7 @@ export const level05: LevelDefinition = {
         note: 'Tilted on its side. Pale cyan haze.',
         radius: PLANET_RADIUS * 1.5,
         spriteIndex: 4,
-        pullStrength: pullFromGravity(0.9),
+        surfaceGravity: 0.9,
       },
       {
         id: 'neptune',
@@ -57,7 +57,7 @@ export const level05: LevelDefinition = {
         note: 'Last world before the dark. Fastest winds in the system.',
         radius: PLANET_RADIUS * 1.45,
         spriteIndex: 0,
-        pullStrength: pullFromGravity(1.1),
+        surfaceGravity: 1.1,
         escort: 'moon',
       },
     ],

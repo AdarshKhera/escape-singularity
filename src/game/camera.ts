@@ -6,14 +6,29 @@ import {
 } from '../levels/worldConfig'
 import {
   applySuckInZoomOut,
-  computeCameraScale,
-  computeCameraWorldY,
+  DEFAULT_SHIP_X_RATIO,
+  computeCameraView,
   computeScreenCentreY,
 } from '../render/cameraScale'
 import type { HoleSegment } from '../levels/levels'
 import type { GameWorld } from './world'
 
-export const SHIP_SCREEN_X_RATIO = 0.16
+export const SHIP_SCREEN_X_RATIO = DEFAULT_SHIP_X_RATIO
+// on touch screens the left thumb sits over the far left, so the ship rides
+// a little further in
+export const SHIP_SCREEN_X_RATIO_TOUCH = 0.22
+
+function isCoarsePointer(): boolean {
+  try {
+    return typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+  } catch {
+    return false
+  }
+}
+
+export function shipScreenXRatio(): number {
+  return isCoarsePointer() ? SHIP_SCREEN_X_RATIO_TOUCH : SHIP_SCREEN_X_RATIO
+}
 // how far the camera pulls back at full boost, for a sense of speed
 const BOOST_ZOOM_OUT = 0.1
 
@@ -31,6 +46,10 @@ export interface CameraFrame {
   holeShake: number
   /** 0..1 either boost source, whichever is stronger */
   boostIntensity: number
+  /** ship forward speed in world units/s, for motion-aware effects */
+  shipSpeed: number
+  /** fraction of the width the ship sits at; resolved once per viewport */
+  shipXRatio: number
 }
 
 export function createCameraFrame(): CameraFrame {
@@ -44,12 +63,15 @@ export function createCameraFrame(): CameraFrame {
     shipScreenX: 0,
     holeShake: 0,
     boostIntensity: 0,
+    shipSpeed: 0,
+    shipXRatio: shipScreenXRatio(),
   }
 }
 
 export interface CameraInputs {
   shipWorldX: number
   shipLateral: number
+  shipSpeed: number
   suckedIn: boolean
 }
 
@@ -62,7 +84,16 @@ export function updateCameraFrame(
   height: number,
   dt: number,
 ): void {
-  let scale = computeCameraScale(ship.shipWorldX, width, height, layout, layout.holeRadius)
+  const view = computeCameraView(
+    ship.shipWorldX,
+    ship.shipLateral,
+    width,
+    height,
+    layout,
+    layout.holeRadius,
+    frame.shipXRatio,
+  )
+  let scale = view.scale
   if (ship.suckedIn) {
     scale = applySuckInZoomOut(scale, world.suckInElapsed / SUCK_IN_SECONDS)
   }
@@ -79,13 +110,14 @@ export function updateCameraFrame(
   frame.height = height
   frame.scale = scale
   frame.shipWorldX = ship.shipWorldX
-  frame.cameraWorldY = computeCameraWorldY(ship.shipWorldX, ship.shipLateral, layout)
+  frame.cameraWorldY = view.cameraWorldY
   frame.screenCentreY = computeScreenCentreY(height)
-  frame.shipScreenX = width * SHIP_SCREEN_X_RATIO
+  frame.shipScreenX = width * frame.shipXRatio
   frame.holeShake = ship.suckedIn
     ? 1
     : computeShakeAmount(ship.shipWorldX, ship.shipLateral, layout)
   frame.boostIntensity = boostIntensity
+  frame.shipSpeed = ship.shipSpeed
 }
 
 export function toScreenX(frame: CameraFrame, worldX: number): number {

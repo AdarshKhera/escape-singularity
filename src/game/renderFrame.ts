@@ -24,6 +24,14 @@ import { damageTierForLives } from '../render/shipSkins'
 import { toScreenX, toScreenY, type CameraFrame } from './camera'
 import type { GameWorld } from './world'
 import { renderFuelCache, renderObstacles, renderPlanets, renderProjectiles } from './renderObjects'
+import {
+  renderFields,
+  renderFlash,
+  renderParticles,
+  renderPopups,
+  renderRings,
+  renderWarnings,
+} from './renderEffects'
 
 type StoreSnapshot = ReturnType<typeof useGameStore.getState>
 
@@ -36,8 +44,8 @@ export interface RenderInputs {
   store: StoreSnapshot
   sprites: Sprites
   stars: Star[]
+  /** game seconds (slows with slow-mo, freezes on hit-stop) */
   time: number
-  now: number
 }
 
 interface HoleScreen {
@@ -141,7 +149,10 @@ function renderShipLayer(input: RenderInputs, hole: HoleScreen): void {
     ctx.restore()
   }
 
-  if (shipScaleFactor <= 0.02) return
+  // a ship destroyed by a collision has already gone up in the explosion
+  const destroyed =
+    (store.status === 'life-lost' || store.status === 'game-over') && store.deathCause === 'collision'
+  if (shipScaleFactor <= 0.02 || destroyed) return
   const shipSet = getShipSpriteSet(sprites, store.shipSkinId, damageTierForLives(store.lives))
   const thrusting =
     store.throttleInput > 0 ||
@@ -167,7 +178,7 @@ function renderShipLayer(input: RenderInputs, hole: HoleScreen): void {
 }
 
 export function renderFrame(input: RenderInputs): void {
-  const { ctx, frame, world, level, layout, store, sprites, time, now } = input
+  const { ctx, frame, world, level, layout, store, sprites, time } = input
   const revealT = computeRevealT(store.shipWorldX, layout)
   const hole: HoleScreen = {
     x: toScreenX(frame, layout.blackHoleX),
@@ -177,11 +188,23 @@ export function renderFrame(input: RenderInputs): void {
   }
 
   renderBackground(input, hole, revealT)
-  renderPlanets(ctx, frame, level, layout, sprites, time)
+
+  // the world layer shakes; full-screen overlays below do not
+  ctx.save()
+  ctx.translate(world.feedback.shakeX, world.feedback.shakeY)
+  renderFields(ctx, frame, level, time, store.shipLateral)
+  renderPlanets(ctx, frame, level, layout, sprites, time, store.shipLateral)
   renderFuelCache(ctx, frame, world, layout, time)
   renderObstacles(ctx, frame, world, sprites, time)
-  renderProjectiles(ctx, frame, world, sprites, now)
+  renderProjectiles(ctx, frame, world, sprites)
   renderHole(input, hole, revealT)
+  renderParticles(ctx, frame, world)
   renderShipLayer(input, hole)
+  renderRings(ctx, frame, world)
+  renderPopups(ctx, frame, world)
+  ctx.restore()
+
   drawSpeedLines(ctx, frame.width, frame.height, time, frame.boostIntensity)
+  renderWarnings(ctx, frame, world, time)
+  renderFlash(ctx, frame, world)
 }

@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem } from '../levelBuilders'
 import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
 
 export const level02: LevelDefinition = {
@@ -25,7 +25,7 @@ export const level02: LevelDefinition = {
         note: 'Tidally locked. Iron core.',
         radius: PLANET_RADIUS * 1.1,
         spriteIndex: 2,
-        pullStrength: pullFromGravity(1.4),
+        surfaceGravity: 1.4,
         escort: 'debris',
       },
       {
@@ -36,7 +36,7 @@ export const level02: LevelDefinition = {
         note: 'Thin methane haze.',
         radius: PLANET_RADIUS * 0.85,
         spriteIndex: 5,
-        pullStrength: pullFromGravity(0.6),
+        surfaceGravity: 0.6,
         escort: 'moon',
       },
       {
@@ -47,7 +47,7 @@ export const level02: LevelDefinition = {
         note: 'Debris ring. Approach with care.',
         radius: PLANET_RADIUS * 1.15,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(1.1),
+        surfaceGravity: 1.1,
         escort: 'debris',
       },
     ],

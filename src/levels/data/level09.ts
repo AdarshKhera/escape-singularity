@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level09: LevelDefinition = {
@@ -16,13 +16,15 @@ export const level09: LevelDefinition = {
   belts: [29000],
   blackHoleName: 'The Fault',
   blackHoleDescription: 'Space itself reads wrong this close to it.',
-  secondHole: {
-    gapX: 7000,
-    approachLeadSeconds: 23,
-    radiusMultiplier: 1.7,
-    name: 'The Deeper Fault',
-    description: 'The Fault was only the outer edge of this one.',
-  },
+  extraHoles: [
+    {
+      gapX: 7000,
+      approachLeadSeconds: 23,
+      radiusMultiplier: 1.7,
+      name: 'The Deeper Fault',
+      description: 'The Fault was only the outer edge of this one.',
+    },
+  ],
   ...buildPlanetSystem(
     [
       {
@@ -33,7 +35,7 @@ export const level09: LevelDefinition = {
         note: 'Split down the middle, still moving.',
         radius: PLANET_RADIUS * 1.3,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(2.2),
+        surfaceGravity: 2.2,
         escort: 'debris',
       },
       {
@@ -44,7 +46,7 @@ export const level09: LevelDefinition = {
         note: 'Ember-lit crust.',
         radius: PLANET_RADIUS * 1.15,
         spriteIndex: 9,
-        pullStrength: pullFromGravity(1.9),
+        surfaceGravity: 1.9,
         escort: 'moon',
       },
       {
@@ -55,7 +57,7 @@ export const level09: LevelDefinition = {
         note: 'Almost nothing holding it together.',
         radius: PLANET_RADIUS * 0.65,
         spriteIndex: 7,
-        pullStrength: pullFromGravity(0.4),
+        surfaceGravity: 0.4,
       },
       {
         id: 'obsidian-reach',
@@ -65,7 +67,7 @@ export const level09: LevelDefinition = {
         note: 'Glassy crust, razor terrain.',
         radius: PLANET_RADIUS * 1.4,
         spriteIndex: 10,
-        pullStrength: pullFromGravity(2.6),
+        surfaceGravity: 2.6,
         escort: 'debris',
       },
       {
@@ -76,7 +78,7 @@ export const level09: LevelDefinition = {
         note: 'Final relay before the fault.',
         radius: PLANET_RADIUS,
         spriteIndex: 6,
-        pullStrength: pullFromGravity(1.1),
+        surfaceGravity: 1.1,
         escort: 'moon',
       },
       {
@@ -87,7 +89,7 @@ export const level09: LevelDefinition = {
         note: 'Perpetual overcast.',
         radius: PLANET_RADIUS * 0.85,
         spriteIndex: 8,
-        pullStrength: pullFromGravity(0.8),
+        surfaceGravity: 0.8,
       },
       {
         id: 'thornwell',
@@ -97,7 +99,7 @@ export const level09: LevelDefinition = {
         note: 'Jagged crystalline growths.',
         radius: PLANET_RADIUS * 1.2,
         spriteIndex: 2,
-        pullStrength: pullFromGravity(2.0),
+        surfaceGravity: 2.0,
         escort: 'debris',
       },
       {
@@ -108,7 +110,7 @@ export const level09: LevelDefinition = {
         note: 'No wind, no sound.',
         radius: PLANET_RADIUS * 0.7,
         spriteIndex: 5,
-        pullStrength: pullFromGravity(0.5),
+        surfaceGravity: 0.5,
       },
       {
         id: 'brimstone',
@@ -118,7 +120,7 @@ export const level09: LevelDefinition = {
         note: 'Sulphur clouds, acid rain.',
         radius: PLANET_RADIUS * 1.25,
         spriteIndex: 4,
-        pullStrength: pullFromGravity(2.3),
+        surfaceGravity: 2.3,
         escort: 'moon',
       },
     ],

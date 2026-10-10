@@ -11,7 +11,7 @@ import {
   WEAPON_UNLOCK_LEVEL,
 } from '../levels/worldConfig'
 import type { LevelDefinition } from '../levels/levels'
-import type { GameWorld, ObstacleType } from './world'
+import { addObstacle, type GameWorld, type ObstacleType } from './world'
 
 // how far ahead of the ship things are spawned
 const SPAWN_LOOKAHEAD = 2600
@@ -43,20 +43,32 @@ function radiusForType(type: ObstacleType): number {
   return 20
 }
 
-// debris flanks the clear central corridor, only during the cruise
+const DERELICT_THICKNESS = 13
+
+// debris flanks the clear central corridor, only during the cruise. From
+// level 2 on, rocks carry their own slow lateral drift, so the corridor
+// isn't a fixed safe line; later levels mix in spinning derelicts.
 function spawnDebris(world: GameWorld, level: LevelDefinition, shipWorldX: number): void {
+  const drift = level.hazards?.driftSpeed ?? 0
+  const derelictChance = level.hazards?.derelictChance ?? 0
   while (world.nextSpawnWorldX < Math.min(shipWorldX + SPAWN_LOOKAHEAD, level.cruiseEndX)) {
-    const type = pickDebrisType(Math.random(), level.id)
+    let type = pickDebrisType(Math.random(), level.id)
+    if (type === 'asteroid' && Math.random() < derelictChance) type = 'derelict'
     const side = Math.random() < 0.5 ? -1 : 1
     const corridor = level.corridorHalfWidth
     const offset = corridor + Math.random() * corridor * 1.6
-    world.obstacles.push({
-      id: world.nextId++,
+    const hazard = type === 'asteroid' || type === 'derelict'
+    // drifters lean toward the corridor more often than away from it
+    const vy = hazard && drift > 0 ? (Math.random() - 0.3) * -side * drift : 0
+    addObstacle(world, {
       type,
       worldX: world.nextSpawnWorldX,
       worldY: side * offset,
-      radius: radiusForType(type),
+      radius: type === 'derelict' ? DERELICT_THICKNESS : radiusForType(type),
       seed: Math.random() * 10,
+      vy,
+      spin: type === 'derelict' ? (Math.random() < 0.5 ? -1 : 1) * (0.9 + Math.random() * 0.9) : 0,
+      halfLength: type === 'derelict' ? 48 + Math.random() * 30 : undefined,
     })
     world.nextSpawnWorldX += level.debrisSpacing + Math.random() * level.debrisSpacing * 0.85
   }
@@ -68,8 +80,7 @@ function spawnBlockades(world: GameWorld, level: LevelDefinition, shipWorldX: nu
     if (world.spawnedBlockades.has(index)) return
     if (shipWorldX + SPAWN_LOOKAHEAD < blockadeX) return
     world.spawnedBlockades.add(index)
-    world.obstacles.push({
-      id: world.nextId++,
+    addObstacle(world, {
       type: 'blockade',
       worldX: blockadeX,
       worldY: 0,
@@ -95,23 +106,21 @@ function spawnBelts(world: GameWorld, level: LevelDefinition, shipWorldX: number
         BELT_ROCK_RADIUS_MIN +
         seededRandom(beltX + i) * (BELT_ROCK_RADIUS_MAX - BELT_ROCK_RADIUS_MIN)
       const jitterX = (seededRandom(beltX + i * 1.9) - 0.5) * 80
-      world.obstacles.push({
-        id: world.nextId++,
+      addObstacle(world, {
         type: 'asteroid',
         worldX: beltX + jitterX,
         worldY,
         radius,
         seed: seededRandom(beltX + i * 3.7) * 10,
         reinforced: true,
-        hitsRemaining: BELT_ROCK_HITS,
+        hits: BELT_ROCK_HITS,
       })
     }
 
     const pickupLead = 900 + seededRandom(beltX * 1.7) * 700
     const pickupLateral =
       (seededRandom(beltX * 2.3) - 0.5) * 2 * (level.corridorHalfWidth + 120)
-    world.obstacles.push({
-      id: world.nextId++,
+    addObstacle(world, {
       type: 'rocketPickup',
       worldX: beltX - pickupLead,
       worldY: pickupLateral,
@@ -127,8 +136,7 @@ function spawnEscorts(world: GameWorld, level: LevelDefinition, shipWorldX: numb
     if (world.spawnedEscorts.has(index)) return
     if (shipWorldX + SPAWN_LOOKAHEAD < escort.worldX) return
     world.spawnedEscorts.add(index)
-    world.obstacles.push({
-      id: world.nextId++,
+    addObstacle(world, {
       type: escort.kind === 'moon' ? 'moon' : 'asteroid',
       worldX: escort.worldX,
       worldY: escort.worldY,

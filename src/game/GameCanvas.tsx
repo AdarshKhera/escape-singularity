@@ -10,8 +10,10 @@ import { loadSprites } from '../render/loadSprites'
 import { getLevel, computeLevelSegments, activeSegment } from '../levels/levels'
 import { createWorld, resetWorldForRun } from './world'
 import { updatePlaying, updateSuckedIn } from './updateGame'
-import { createCameraFrame, updateCameraFrame } from './camera'
+import { createCameraFrame, shipScreenXRatio, updateCameraFrame } from './camera'
 import { renderFrame } from './renderFrame'
+import { stepFeedback } from './feedback'
+import { ageEffects } from './renderEffects'
 
 const STAR_COUNT = 320
 // clamp long frames (tab switches, GC pauses) so physics never tunnels
@@ -49,6 +51,7 @@ export function GameCanvas() {
       canvas.height = Math.round(viewHeight * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       stars = generateStars(STAR_COUNT, viewWidth, viewHeight)
+      frame.shipXRatio = shipScreenXRatio()
     }
     resize()
     window.addEventListener('resize', resize)
@@ -58,9 +61,8 @@ export function GameCanvas() {
 
     const loop = (now: number) => {
       animationFrame = requestAnimationFrame(loop)
-      const dt = Math.min((now - lastTime) / 1000, MAX_FRAME_SECONDS)
+      const realDt = Math.min((now - lastTime) / 1000, MAX_FRAME_SECONDS)
       lastTime = now
-      const time = now / 1000
       const store = useGameStore.getState()
 
       // paused: freeze the frame exactly as it is, do nothing else
@@ -70,19 +72,34 @@ export function GameCanvas() {
       world.prevWorldX = store.shipWorldX
 
       const level = getLevel(store.level)
-      const layout = activeSegment(computeLevelSegments(level), store.shipWorldX)
+      const segments = computeLevelSegments(level)
+      const layout = activeSegment(segments, store.shipWorldX)
 
-      // crossing from one hole's segment into the next — re-arm the warning
-      // and the fuel cache for the new approach
+      // crossing from one hole's segment into the next — re-arm the warning,
+      // the fuel cache and the skim tracking for the new approach
       if (world.lastSegmentHoleX !== null && world.lastSegmentHoleX !== layout.blackHoleX) {
         world.approachArmed = false
         world.fuelCacheTaken = false
+        world.segmentMinGap = Infinity
       }
       world.lastSegmentHoleX = layout.blackHoleX
 
-      const frameCtx = { level, layout, dt, time, now }
-      if (store.status === 'playing') updatePlaying(world, frameCtx)
-      else if (store.status === 'sucked-in') updateSuckedIn(world, dt)
+      // hit-stop and slow-mo scale the simulation, never the real clock
+      const dt = realDt * stepFeedback(world.feedback, realDt, now / 1000)
+      world.simTime += dt
+
+      if (store.status === 'playing') {
+        updatePlaying(world, {
+          level,
+          layout,
+          levelEndX: segments[segments.length - 1].levelEndX,
+          dt,
+        })
+      } else if (store.status === 'sucked-in') {
+        updateSuckedIn(world, dt)
+      }
+      world.particles.step(dt)
+      ageEffects(world)
 
       const latest = useGameStore.getState()
       updateCameraFrame(
@@ -92,15 +109,17 @@ export function GameCanvas() {
         {
           shipWorldX: latest.shipWorldX,
           shipLateral: latest.shipLateral,
+          shipSpeed: latest.shipForwardSpeed,
           suckedIn: latest.status === 'sucked-in',
         },
         viewWidth,
         viewHeight,
-        dt,
+        realDt,
       )
+      world.viewScale = frame.scale
       audioEngine.setRumble(frame.holeShake)
 
-      renderFrame({ ctx, frame, world, level, layout, store: latest, sprites, stars, time, now })
+      renderFrame({ ctx, frame, world, level, layout, store: latest, sprites, stars, time: world.simTime })
     }
 
     animationFrame = requestAnimationFrame(loop)

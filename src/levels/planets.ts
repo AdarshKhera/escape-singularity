@@ -1,3 +1,10 @@
+export interface PlanetWander {
+  /** lateral swing either side of worldY, world units */
+  amplitude: number
+  /** radians per second */
+  speed: number
+}
+
 export interface PlanetDefinition {
   id: string
   name: string
@@ -10,14 +17,16 @@ export interface PlanetDefinition {
   radius: number
   spriteIndex: number
   /**
-   * Actual gravitational pull, independent of radius and visual size — a
-   * small dense world can pull harder than a big gassy one. Always far
-   * weaker than the hole; this is flavour and light slingshot assistance,
-   * never a threat on its own.
+   * Surface gravity in g. Drives the real pull (see computePlanetAccel):
+   * acceleration at the surface is this times PLANET_G, falling off with the
+   * square of distance, so a small dense world can bend the ship harder than
+   * a big gassy one of the same size on screen.
    */
-  pullStrength: number
-  /** world units a planet's gravity reaches; defaults to radius * 6 */
+  surfaceGravity: number
+  /** world units a planet's gravity reaches; defaults to radius * PLANET_INFLUENCE_RADII */
   influenceRadius?: number
+  /** a rogue world: drifts back and forth across the lane instead of holding still */
+  wander?: PlanetWander
 }
 
 // How close (in world units along the flight path) the ship must be for the

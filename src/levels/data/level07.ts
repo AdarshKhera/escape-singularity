@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level07: LevelDefinition = {
@@ -25,7 +25,7 @@ export const level07: LevelDefinition = {
         note: 'Supernova remnant, still hot.',
         radius: PLANET_RADIUS * 1.25,
         spriteIndex: 9,
-        pullStrength: pullFromGravity(2.0),
+        surfaceGravity: 2.0,
         escort: 'debris',
       },
       {
@@ -36,7 +36,7 @@ export const level07: LevelDefinition = {
         note: 'Ash-choked, dim.',
         radius: PLANET_RADIUS * 0.75,
         spriteIndex: 1,
-        pullStrength: pullFromGravity(0.6),
+        surfaceGravity: 0.6,
       },
       {
         id: 'pallor',
@@ -46,7 +46,7 @@ export const level07: LevelDefinition = {
         note: 'Pale, thin-aired.',
         radius: PLANET_RADIUS,
         spriteIndex: 6,
-        pullStrength: pullFromGravity(1.2),
+        surfaceGravity: 1.2,
         escort: 'moon',
       },
       {
@@ -57,7 +57,7 @@ export const level07: LevelDefinition = {
         note: 'Dense, cratered, unlit.',
         radius: PLANET_RADIUS * 1.35,
         spriteIndex: 10,
-        pullStrength: pullFromGravity(2.4),
+        surfaceGravity: 2.4,
         escort: 'debris',
       },
       {
@@ -68,7 +68,7 @@ export const level07: LevelDefinition = {
         note: 'Needle-thin mountain spires.',
         radius: PLANET_RADIUS * 0.7,
         spriteIndex: 2,
-        pullStrength: pullFromGravity(0.5),
+        surfaceGravity: 0.5,
       },
       {
         id: 'redshank',
@@ -78,7 +78,7 @@ export const level07: LevelDefinition = {
         note: 'Iron oxide dust storms.',
         radius: PLANET_RADIUS * 1.15,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(1.8),
+        surfaceGravity: 1.8,
         escort: 'moon',
       },
       {
@@ -89,7 +89,7 @@ export const level07: LevelDefinition = {
         note: 'Faint auroras, no known cause.',
         radius: PLANET_RADIUS * 0.9,
         spriteIndex: 5,
-        pullStrength: pullFromGravity(0.9),
+        surfaceGravity: 0.9,
         escort: 'debris',
       },
     ],

@@ -10,7 +10,12 @@ import { level08 } from './data/level08'
 import { level09 } from './data/level09'
 import { level10 } from './data/level10'
 
-export type { HoleSegment, LevelDefinition, SecondHoleDefinition } from './levelTypes'
+export type {
+  ExtraHoleDefinition,
+  HoleSegment,
+  LevelDefinition,
+  SecondHoleDefinition,
+} from './levelTypes'
 export { computeLevelSegments, activeSegment } from './segments'
 
 // Difficulty escalates on several axes at once: the pull widens its reach and

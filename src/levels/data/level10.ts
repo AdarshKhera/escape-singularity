@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level10: LevelDefinition = {
@@ -15,13 +15,15 @@ export const level10: LevelDefinition = {
   blockades: spreadBlockades(5, 5000, 47000),
   blackHoleName: 'The Maw',
   blackHoleDescription: 'Not the last one. There is worse still ahead.',
-  secondHole: {
-    gapX: 7500,
-    approachLeadSeconds: 26,
-    radiusMultiplier: 2.0,
-    name: "The Maw's Throat",
-    description: 'Past the first Maw, the real one waits. There is no chart past this.',
-  },
+  extraHoles: [
+    {
+      gapX: 7500,
+      approachLeadSeconds: 26,
+      radiusMultiplier: 2.0,
+      name: "The Maw's Throat",
+      description: 'Past the first Maw, the real one waits. There is no chart past this.',
+    },
+  ],
   ...buildPlanetSystem(
     [
       {
@@ -32,7 +34,7 @@ export const level10: LevelDefinition = {
         note: 'The last named world before the dark.',
         radius: PLANET_RADIUS * 1.35,
         spriteIndex: 4,
-        pullStrength: pullFromGravity(2.4),
+        surfaceGravity: 2.4,
         escort: 'debris',
       },
       {
@@ -43,7 +45,7 @@ export const level10: LevelDefinition = {
         note: 'Atmosphere all but gone.',
         radius: PLANET_RADIUS * 0.7,
         spriteIndex: 1,
-        pullStrength: pullFromGravity(0.5),
+        surfaceGravity: 0.5,
       },
       {
         id: 'deadlight',
@@ -53,7 +55,7 @@ export const level10: LevelDefinition = {
         note: 'No star reaches it directly.',
         radius: PLANET_RADIUS * 1.4,
         spriteIndex: 10,
-        pullStrength: pullFromGravity(2.7),
+        surfaceGravity: 2.7,
         escort: 'moon',
       },
       {
@@ -64,7 +66,7 @@ export const level10: LevelDefinition = {
         note: 'Thin winds, constant static.',
         radius: PLANET_RADIUS * 0.85,
         spriteIndex: 8,
-        pullStrength: pullFromGravity(0.9),
+        surfaceGravity: 0.9,
         escort: 'debris',
       },
       {
@@ -75,7 +77,7 @@ export const level10: LevelDefinition = {
         note: 'Nothing charted past this point.',
         radius: PLANET_RADIUS * 1.1,
         spriteIndex: 11,
-        pullStrength: pullFromGravity(1.8),
+        surfaceGravity: 1.8,
         escort: 'moon',
       },
       {
@@ -86,7 +88,7 @@ export const level10: LevelDefinition = {
         note: 'Massive, dark, unmoving.',
         radius: PLANET_RADIUS * 1.45,
         spriteIndex: 9,
-        pullStrength: pullFromGravity(2.6),
+        surfaceGravity: 2.6,
         escort: 'debris',
       },
       {
@@ -97,7 +99,7 @@ export const level10: LevelDefinition = {
         note: 'Last clear view of the hole.',
         radius: PLANET_RADIUS * 0.8,
         spriteIndex: 7,
-        pullStrength: pullFromGravity(0.7),
+        surfaceGravity: 0.7,
       },
       {
         id: 'threshold',
@@ -107,7 +109,7 @@ export const level10: LevelDefinition = {
         note: 'Orbit already decaying.',
         radius: PLANET_RADIUS * 1.25,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(2.2),
+        surfaceGravity: 2.2,
         escort: 'debris',
       },
       {
@@ -118,7 +120,7 @@ export const level10: LevelDefinition = {
         note: 'Permanent night side.',
         radius: PLANET_RADIUS,
         spriteIndex: 6,
-        pullStrength: pullFromGravity(1.0),
+        surfaceGravity: 1.0,
         escort: 'moon',
       },
       {
@@ -129,7 +131,7 @@ export const level10: LevelDefinition = {
         note: 'The last thing before the Maw.',
         radius: PLANET_RADIUS * 1.5,
         spriteIndex: 10,
-        pullStrength: pullFromGravity(2.9),
+        surfaceGravity: 2.9,
         escort: 'debris',
       },
     ],

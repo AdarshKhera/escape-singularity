@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level06: LevelDefinition = {
@@ -26,7 +26,7 @@ export const level06: LevelDefinition = {
         note: 'Binary shadow world.',
         radius: PLANET_RADIUS * 1.2,
         spriteIndex: 0,
-        pullStrength: pullFromGravity(1.9),
+        surfaceGravity: 1.9,
         escort: 'debris',
       },
       {
@@ -37,7 +37,7 @@ export const level06: LevelDefinition = {
         note: 'Fractured, half-formed.',
         radius: PLANET_RADIUS * 0.7,
         spriteIndex: 7,
-        pullStrength: pullFromGravity(0.5),
+        surfaceGravity: 0.5,
       },
       {
         id: 'wintermere',
@@ -47,7 +47,7 @@ export const level06: LevelDefinition = {
         note: 'Frozen nitrogen oceans.',
         radius: PLANET_RADIUS * 1.05,
         spriteIndex: 8,
-        pullStrength: pullFromGravity(1.5),
+        surfaceGravity: 1.5,
         escort: 'moon',
       },
       {
@@ -58,7 +58,7 @@ export const level06: LevelDefinition = {
         note: 'Exposed metallic core.',
         radius: PLANET_RADIUS * 1.3,
         spriteIndex: 3,
-        pullStrength: pullFromGravity(2.3),
+        surfaceGravity: 2.3,
         escort: 'debris',
       },
       {
@@ -69,7 +69,7 @@ export const level06: LevelDefinition = {
         note: 'Constant high-altitude gales.',
         radius: PLANET_RADIUS * 0.85,
         spriteIndex: 11,
-        pullStrength: pullFromGravity(0.7),
+        surfaceGravity: 0.7,
       },
       {
         id: 'darkmoor',
@@ -79,7 +79,7 @@ export const level06: LevelDefinition = {
         note: 'Never faces its own star.',
         radius: PLANET_RADIUS * 1.25,
         spriteIndex: 9,
-        pullStrength: pullFromGravity(2.0),
+        surfaceGravity: 2.0,
         escort: 'moon',
       },
     ],

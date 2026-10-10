@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem } from '../levelBuilders'
 import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
 
 export const level01: LevelDefinition = {
@@ -25,7 +25,7 @@ export const level01: LevelDefinition = {
         note: 'First charted world on this route.',
         radius: PLANET_RADIUS,
         spriteIndex: 0,
-        pullStrength: pullFromGravity(1.0),
+        surfaceGravity: 1.0,
         escort: 'moon',
       },
       {
@@ -36,7 +36,7 @@ export const level01: LevelDefinition = {
         note: 'Frost-locked, quiet.',
         radius: PLANET_RADIUS * 0.8,
         spriteIndex: 5,
-        pullStrength: pullFromGravity(0.6),
+        surfaceGravity: 0.6,
       },
     ],
     1400,

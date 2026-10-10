@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
 import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
 
 export const level03: LevelDefinition = {
@@ -25,7 +25,7 @@ export const level03: LevelDefinition = {
         note: 'Volcanic. Unsurveyed.',
         radius: PLANET_RADIUS * 1.3,
         spriteIndex: 9,
-        pullStrength: pullFromGravity(2.1),
+        surfaceGravity: 2.1,
         escort: 'debris',
       },
       {
@@ -36,7 +36,7 @@ export const level03: LevelDefinition = {
         note: 'Ice shell over liquid ocean.',
         radius: PLANET_RADIUS,
         spriteIndex: 6,
-        pullStrength: pullFromGravity(0.9),
+        surfaceGravity: 0.9,
         escort: 'moon',
       },
       {
@@ -47,7 +47,7 @@ export const level03: LevelDefinition = {
         note: 'Low mass. Trace atmosphere.',
         radius: PLANET_RADIUS * 0.8,
         spriteIndex: 7,
-        pullStrength: pullFromGravity(0.4),
+        surfaceGravity: 0.4,
       },
       {
         id: 'morrow',
@@ -57,7 +57,7 @@ export const level03: LevelDefinition = {
         note: 'Storm bands. High albedo.',
         radius: PLANET_RADIUS * 1.2,
         spriteIndex: 4,
-        pullStrength: pullFromGravity(1.6),
+        surfaceGravity: 1.6,
         escort: 'debris',
       },
     ],
