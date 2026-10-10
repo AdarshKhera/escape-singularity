@@ -16,6 +16,7 @@ import { renderFrame } from './renderFrame'
 const STAR_COUNT = 320
 // clamp long frames (tab switches, GC pauses) so physics never tunnels
 const MAX_FRAME_SECONDS = 0.05
+const MAX_DPR = 2
 
 export function GameCanvas() {
   useShipController()
@@ -34,11 +35,20 @@ export function GameCanvas() {
     const frame = createCameraFrame()
     const sprites = loadSprites()
     let stars: Star[] = []
+    let viewWidth = 0
+    let viewHeight = 0
 
+    // The backing store follows devicePixelRatio (capped for fill-rate on
+    // phones) so sprites and lines stay crisp; everything else draws in CSS
+    // pixels under a matching transform.
     const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      stars = generateStars(STAR_COUNT, canvas.width, canvas.height)
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
+      viewWidth = window.innerWidth
+      viewHeight = window.innerHeight
+      canvas.width = Math.round(viewWidth * dpr)
+      canvas.height = Math.round(viewHeight * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      stars = generateStars(STAR_COUNT, viewWidth, viewHeight)
     }
     resize()
     window.addEventListener('resize', resize)
@@ -84,8 +94,8 @@ export function GameCanvas() {
           shipLateral: latest.shipLateral,
           suckedIn: latest.status === 'sucked-in',
         },
-        canvas.width,
-        canvas.height,
+        viewWidth,
+        viewHeight,
         dt,
       )
       audioEngine.setRumble(frame.holeShake)

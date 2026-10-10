@@ -1,3 +1,5 @@
+import { pickReadyFrame } from './gradientCache'
+
 // The active shield bubble drawn over the ship while a charge is held.
 export function drawShipShield(
   ctx: CanvasRenderingContext2D,
@@ -7,9 +9,8 @@ export function drawShipShield(
   frames: HTMLImageElement[],
   time: number,
 ) {
-  const ready = frames.filter((f) => f.complete && f.naturalWidth > 0)
-  if (ready.length === 0) return
-  const sprite = ready[Math.floor(time * 12) % ready.length]
+  const sprite = pickReadyFrame(frames, Math.floor(time * 12))
+  if (!sprite) return
 
   const size = radius * 2.6
   ctx.save()

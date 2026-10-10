@@ -68,6 +68,8 @@ function renderBackground(input: RenderInputs, hole: HoleScreen, revealT: number
     time,
     visibleFraction: 1 - revealT * 0.88,
     skipClear: true,
+    width: frame.width,
+    height: frame.height,
     streak: victoryT,
     scrollSpeed: victoryT * 900,
     warp: {

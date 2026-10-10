@@ -1,3 +1,5 @@
+import { pickReadyFrame } from './gradientCache'
+
 interface DrawShipOptions {
   x: number
   y: number
@@ -30,15 +32,12 @@ export function drawShip(
     shake = 0,
   }: DrawShipOptions,
 ) {
-  let sprite: HTMLImageElement
-  if (thrusting) {
-    const ready = thrustFrames.filter((f) => f.complete && f.naturalWidth > 0)
-    if (ready.length === 0) return
-    sprite = ready[Math.floor(time * FRAME_RATE) % ready.length]
-  } else {
-    if (!idleFrame.complete || idleFrame.naturalWidth === 0) return
-    sprite = idleFrame
-  }
+  const sprite = thrusting
+    ? pickReadyFrame(thrustFrames, Math.floor(time * FRAME_RATE))
+    : idleFrame.complete && idleFrame.naturalWidth > 0
+      ? idleFrame
+      : null
+  if (!sprite) return
 
   const flicker = invulnerable ? 0.4 + 0.6 * Math.abs(Math.sin(time * 12)) : 1
   const tilt = bankInput * 0.3
