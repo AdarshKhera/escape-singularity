@@ -1,0 +1,233 @@
+/* In-game HUD: one slim top-centre panel, nothing else competing with play. */
+
+.es-hud {
+  position: absolute;
+  top: max(10px, calc(var(--es-safe-top) + 6px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 260px;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, rgba(12, 17, 28, 0.72), rgba(8, 11, 18, 0.58));
+  border: 1px solid var(--es-line);
+  border-radius: 7px;
+  box-shadow:
+    0 4px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-family: var(--es-font-mono);
+  color: var(--es-ink);
+  pointer-events: none;
+}
+
+.es-hud__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.es-hud__level {
+  max-width: 46vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--es-font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5fd0ff;
+  text-shadow: 0 0 12px rgba(95, 208, 255, 0.4);
+}
+
+.es-hud__divider {
+  width: 1px;
+  height: 10px;
+  background: rgba(191, 227, 255, 0.2);
+}
+
+.es-hud__hearts {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.es-hud__fuel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+}
+
+.es-hud__fuel-label {
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.es-hud__fuel-track {
+  flex: 1;
+  min-width: 90px;
+  height: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+}
+
+.es-hud__fuel-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3fd6ff, #7fe9c7);
+  transition: width 0.15s linear;
+}
+
+.es-hud__fuel-fill--low {
+  background: linear-gradient(90deg, #ff5d5d, #ff9a6a);
+}
+
+.es-hud__countdown {
+  min-width: 36px;
+  font-size: 10px;
+  font-weight: 500;
+  text-align: right;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.es-hud__loadout {
+  display: flex;
+  gap: 10px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--es-warm);
+  opacity: 0.85;
+}
+
+.es-hud__hint {
+  position: absolute;
+  font-family: var(--es-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--es-ink);
+  pointer-events: none;
+}
+
+.es-hud__hint--corner {
+  top: 14px;
+  right: 16px;
+  opacity: 0.35;
+}
+
+.es-hud__hint--fire {
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.5;
+}
+
+.es-hud__banner {
+  position: absolute;
+  top: 24%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  max-width: 90vw;
+  font-family: var(--es-font-display);
+  font-weight: 700;
+  font-size: clamp(13px, 4.4vh, 18px);
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  color: var(--es-warm);
+  text-shadow: 0 0 18px rgba(255, 150, 80, 0.5);
+  pointer-events: none;
+}
+
+.es-hud__pause {
+  position: absolute;
+  top: max(10px, calc(var(--es-safe-top) + 6px));
+  right: max(12px, calc(var(--es-safe-right) + 8px));
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(191, 227, 255, 0.25);
+  background: rgba(10, 18, 30, 0.42);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.es-hud__pause:active {
+  transform: scale(0.92);
+  background: rgba(63, 214, 255, 0.16);
+}
+
+.es-hud__pause span {
+  width: 4px;
+  height: 15px;
+  border-radius: 1px;
+  background: var(--es-ink-soft);
+}
+
+/* Desktop track picker, bottom-left and quiet */
+.es-musicbar {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(8, 12, 20, 0.5);
+  border: 1px solid rgba(191, 227, 255, 0.12);
+  border-radius: 6px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  font-family: var(--es-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--es-ink-soft);
+  opacity: 0.7;
+  transition: opacity 160ms ease;
+}
+
+.es-musicbar:hover {
+  opacity: 1;
+}
+
+.es-musicbar__title {
+  min-width: 96px;
+  text-align: center;
+}
+
+.es-musicbar__btn {
+  width: 22px;
+  height: 22px;
+  font-family: var(--es-font-mono);
+  font-size: 13px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid rgba(191, 227, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.es-musicbar__btn:hover {
+  border-color: var(--es-accent);
+  color: var(--es-accent);
+}

@@ -1,41 +1,91 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { GameCanvas } from './game/GameCanvas'
+import { useGameStore } from './state/gameStore'
+import { useSettingsStore } from './state/settingsStore'
 import { HUD } from './ui/HUD'
 import { MusicBar } from './ui/MusicBar'
-import { StartScreen } from './ui/StartScreen'
 import { IntroLoader } from './ui/IntroLoader'
-import { audioEngine } from './audio/AudioEngine'
-import { TRACKS } from './audio/tracks'
-import { useGameStore } from './state/gameStore'
+import { MainMenu } from './ui/menu/MainMenu'
+import { RotateDevice } from './ui/RotateDevice'
+import { TouchControls } from './ui/touch/TouchControls'
+import { GameOverlays, restartLevel } from './ui/overlays/GameOverlays'
+import { applyAudioSettings, startAudio } from './ui/audioAdapter'
+import { enterImmersiveMode, useIsPortrait, useIsTouchDevice, useSuppressContextMenu, useTouchMode } from './ui/device'
+import { useHaptics } from './ui/haptics'
+import { useAudioSettingsSync, useAutoPause, useProgressRecorder } from './ui/useGameLifecycle'
+import { useBackGuard } from './ui/useBackGuard'
+import './ui/ui.css'
 
 type AppPhase = 'intro' | 'menu' | 'game'
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>('intro')
-  const shipSkinId = useGameStore((s) => s.shipSkinId)
-  const setShipSkinId = useGameStore((s) => s.setShipSkinId)
+  const touchDevice = useIsTouchDevice()
+  const touchMode = useTouchMode()
+  const portrait = useIsPortrait()
+  const blockedByOrientation = touchDevice && portrait
 
-  // audio must be unlocked by a user gesture, so it starts with the launch click
-  const handleStart = () => {
-    audioEngine.start()
-    audioEngine.playTrack(TRACKS[0].id)
-    setPhase('game')
-  }
+  useHaptics()
+  useAudioSettingsSync()
+  useProgressRecorder()
+  useAutoPause(blockedByOrientation)
+  useBackGuard(phase === 'game')
+  useSuppressContextMenu(phase === 'game')
+
+  // runs inside the tap: fullscreen, orientation lock and audio all need a
+  // user gesture, so none of them can be deferred to an effect
+  const startLevel = useCallback(
+    (level: number) => {
+      if (touchDevice) void enterImmersiveMode()
+      startAudio()
+      const { music, sfx } = useSettingsStore.getState()
+      applyAudioSettings(music, sfx)
+      restartLevel(level)
+      setPhase('game')
+    },
+    [touchDevice],
+  )
+
+  const quitToMenu = useCallback(() => setPhase('menu'), [])
+  const skipIntro = useCallback(() => setPhase('menu'), [])
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#000' }}>
-      {phase === 'intro' && <IntroLoader onFinish={() => setPhase('menu')} />}
-      {phase === 'menu' && (
-        <StartScreen onStart={handleStart} shipSkinId={shipSkinId} onSelectShipSkin={setShipSkinId} />
+    <div className="es-app">
+      {phase === 'intro' && (
+        <div onPointerDown={skipIntro} style={{ position: 'absolute', inset: 0 }}>
+          <IntroLoader onFinish={skipIntro} />
+        </div>
       )}
+
+      {phase === 'menu' && <MainMenu onStartLevel={startLevel} />}
+
       {phase === 'game' && (
-        <>
-          <GameCanvas />
-          <HUD onQuit={() => setPhase('menu')} />
-          <MusicBar />
-        </>
+        <GameView touchMode={touchMode} onQuitToMenu={quitToMenu} />
       )}
+
+      {blockedByOrientation && <RotateDevice />}
     </div>
+  )
+}
+
+interface GameViewProps {
+  touchMode: boolean
+  onQuitToMenu: () => void
+}
+
+function GameView({ touchMode, onQuitToMenu }: GameViewProps) {
+  const status = useGameStore((s) => s.status)
+  const paused = useGameStore((s) => s.paused)
+  const flying = (status === 'playing' || status === 'sucked-in') && !paused
+
+  return (
+    <>
+      <GameCanvas />
+      <HUD touchMode={touchMode} />
+      {touchMode && flying && <TouchControls />}
+      {!touchMode && <MusicBar />}
+      <GameOverlays inputMode={touchMode ? 'touch' : 'keyboard'} onQuitToMenu={onQuitToMenu} />
+    </>
   )
 }
 

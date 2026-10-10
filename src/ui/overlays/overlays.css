@@ -1,0 +1,119 @@
+/* In-game overlay layouts. Shared look comes from .es-overlay in ui.css. */
+
+.es-pause {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  gap: var(--es-space-5);
+  width: 100%;
+  text-align: left;
+}
+
+.es-pause__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--es-space-3);
+  padding-left: var(--es-space-5);
+  border-left: 1px solid var(--es-line);
+}
+
+.es-pause__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--es-space-1);
+}
+
+.es-chip-row {
+  display: flex;
+  gap: var(--es-space-2);
+}
+
+.es-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 var(--es-space-3);
+  font-family: var(--es-font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--es-faint);
+  background: transparent;
+  border: 1px solid var(--es-line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.es-chip[aria-pressed='true'] {
+  color: var(--es-accent);
+  border-color: rgba(63, 214, 255, 0.5);
+  background: rgba(63, 214, 255, 0.08);
+}
+
+.es-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.es-result__stars {
+  margin: var(--es-space-1) 0;
+}
+
+.es-result__score {
+  font-family: var(--es-font-display);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: var(--es-ink);
+  animation: es-fade-in 600ms 900ms ease-out both;
+}
+
+.es-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--es-space-5);
+  animation: es-fade-in 600ms 1000ms ease-out both;
+}
+
+.es-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.es-stat__value {
+  font-family: var(--es-font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--es-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.es-hearts {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+@media (max-height: 420px) {
+  .es-overlay__card {
+    padding: var(--es-space-4) var(--es-space-5);
+    gap: var(--es-space-2);
+  }
+}
+
+@media (max-width: 560px) {
+  .es-pause {
+    grid-template-columns: 1fr;
+  }
+
+  .es-pause__side {
+    padding-left: 0;
+    border-left: none;
+  }
+}
