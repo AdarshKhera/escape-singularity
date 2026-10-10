@@ -1,3 +1,38 @@
+/* Global shell: a fixed, non-scrolling, non-zooming game surface. */
+
+:root {
+  --es-bg: #000;
+  --es-ink: #e8ecf5;
+  --es-ink-soft: #bfe3ff;
+  --es-muted: rgba(232, 236, 245, 0.55);
+  --es-faint: rgba(232, 236, 245, 0.32);
+  --es-accent: #3fd6ff;
+  --es-accent-soft: rgba(63, 214, 255, 0.1);
+  --es-accent-glow: rgba(63, 214, 255, 0.22);
+  --es-warm: #ffb37a;
+  --es-danger: #ff6b6b;
+  --es-gold: #ffd36b;
+  --es-line: rgba(191, 227, 255, 0.16);
+  --es-line-strong: rgba(191, 227, 255, 0.32);
+  --es-panel: linear-gradient(180deg, rgba(14, 20, 32, 0.86), rgba(8, 11, 18, 0.8));
+
+  --es-font-display: 'Orbitron', sans-serif;
+  --es-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --es-space-1: 4px;
+  --es-space-2: 8px;
+  --es-space-3: 12px;
+  --es-space-4: 16px;
+  --es-space-5: 24px;
+  --es-space-6: 32px;
+  --es-radius: 6px;
+
+  --es-safe-top: env(safe-area-inset-top, 0px);
+  --es-safe-right: env(safe-area-inset-right, 0px);
+  --es-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --es-safe-left: env(safe-area-inset-left, 0px);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,6 +44,46 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  background: #000;
+  background: var(--es-bg);
   overflow: hidden;
+}
+
+html,
+body {
+  /* no pull-to-refresh, no rubber banding, no double-tap zoom */
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  color: var(--es-ink);
+  font-family: var(--es-font-mono);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  touch-action: manipulation;
+}
+
+/* The game canvas sizes its backing store to innerWidth/innerHeight but styles
+   itself 100vw/100vh; on mobile browsers 100vh can exceed the visible height
+   and stretch the frame. Pin the element to the shell instead. */
+.es-app > canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
