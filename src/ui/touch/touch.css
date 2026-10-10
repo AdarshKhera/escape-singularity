@@ -1,0 +1,225 @@
+/* On-screen controls. Translucent at rest, brighter while held, kept to the
+   bottom corners so the ship's lane through the middle stays clear. */
+
+.es-touch {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.es-touch__left,
+.es-touch__right {
+  position: absolute;
+  bottom: max(14px, calc(var(--es-safe-bottom) + 8px));
+  pointer-events: none;
+}
+
+.es-touch__left {
+  left: max(14px, calc(var(--es-safe-left) + 8px));
+}
+
+.es-touch__right {
+  right: max(16px, calc(var(--es-safe-right) + 10px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.es-touch__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* ---------- Steer pad ---------- */
+
+.es-steer {
+  position: relative;
+  width: 96px;
+  height: clamp(140px, 48vh, 196px);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.es-steer__track {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  bottom: 6px;
+  width: 64px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(10, 18, 30, 0.32);
+  border: 1px solid rgba(191, 227, 255, 0.2);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.es-steer[data-active='true'] .es-steer__track {
+  background: rgba(63, 214, 255, 0.1);
+  border-color: rgba(63, 214, 255, 0.45);
+}
+
+.es-steer__track::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 50%;
+  height: 1px;
+  background: rgba(191, 227, 255, 0.18);
+}
+
+.es-steer__chevron {
+  position: absolute;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translateX(-50%);
+  fill: none;
+  stroke: rgba(191, 227, 255, 0.5);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 120ms ease;
+}
+
+.es-steer__chevron--up {
+  top: 10px;
+}
+
+.es-steer__chevron--down {
+  bottom: 10px;
+}
+
+.es-steer__chevron[data-active='true'] {
+  stroke: var(--es-accent);
+  filter: drop-shadow(0 0 6px rgba(63, 214, 255, 0.7));
+}
+
+.es-steer__knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.28), rgba(191, 227, 255, 0.1));
+  border: 1px solid rgba(191, 227, 255, 0.4);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 60ms linear;
+}
+
+.es-steer[data-active='true'] .es-steer__knob {
+  border-color: var(--es-accent);
+  box-shadow: 0 0 16px rgba(63, 214, 255, 0.45);
+}
+
+/* ---------- Action buttons ---------- */
+
+.es-tbtn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 50%;
+  border: 1px solid rgba(191, 227, 255, 0.28);
+  background: rgba(10, 18, 30, 0.34);
+  color: rgba(232, 236, 245, 0.8);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  transition:
+    transform 90ms ease,
+    background 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.es-tbtn[data-active='true'],
+.es-tbtn:active {
+  transform: scale(0.93);
+}
+
+.es-tbtn__label {
+  font-family: var(--es-font-display);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.es-tbtn__hint {
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+
+.es-tbtn__icon {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.es-tbtn--thrust {
+  width: clamp(80px, 25vh, 96px);
+  height: clamp(80px, 25vh, 96px);
+  color: var(--es-accent);
+  border-color: rgba(63, 214, 255, 0.45);
+}
+
+.es-tbtn--thrust[data-active='true'] {
+  background: rgba(63, 214, 255, 0.22);
+  border-color: var(--es-accent);
+  box-shadow: 0 0 26px rgba(63, 214, 255, 0.4);
+}
+
+.es-tbtn--brake {
+  width: 64px;
+  height: 64px;
+}
+
+.es-tbtn--brake[data-active='true'] {
+  background: rgba(255, 179, 122, 0.18);
+  border-color: var(--es-warm);
+  color: var(--es-warm);
+}
+
+.es-tbtn--fire {
+  width: 66px;
+  height: 66px;
+  margin-right: 14px;
+  color: var(--es-warm);
+  border-color: rgba(255, 179, 122, 0.55);
+  background: rgba(40, 20, 8, 0.4);
+  animation: es-fire-in 260ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.es-tbtn--fire:active {
+  background: rgba(255, 179, 122, 0.3);
+  box-shadow: 0 0 22px rgba(255, 150, 80, 0.5);
+}
+
+.es-tbtn__count {
+  font-family: var(--es-font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+}
+
+@keyframes es-fire-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
