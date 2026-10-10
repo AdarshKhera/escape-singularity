@@ -53,7 +53,9 @@ function App() {
   return (
     <div className="es-app">
       {phase === 'intro' && (
-        <div onPointerDown={skipIntro} style={{ position: 'absolute', inset: 0 }}>
+        // skip on click, not pointerdown: the menu mounts under the finger and
+        // would otherwise receive this same tap's click
+        <div onClick={skipIntro} style={{ position: 'absolute', inset: 0 }}>
           <IntroLoader onFinish={skipIntro} />
         </div>
       )}

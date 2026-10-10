@@ -1,8 +1,8 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState, type PointerEvent } from 'react'
 import { clampKnob, steerFromOffset, type Axis } from '../../input/touchInput'
 
-const DEADZONE_PX = 12
-const KNOB_TRAVEL_PX = 52
+const DEADZONE_PX = 10
+const KNOB_TRAVEL_PX = 40
 
 export interface SteerPadHandle {
   release: () => void
@@ -89,9 +89,9 @@ export const SteerPad = forwardRef<SteerPadHandle, SteerPadProps>(function Steer
       onLostPointerCapture={onPointerEnd}
     >
       <div className="es-steer__track">
+        <div className="es-steer__knob" style={{ transform: `translate(-50%, calc(-50% + ${knob}px))` }} />
         <Chevron up active={axis === -1} />
         <Chevron active={axis === 1} />
-        <div className="es-steer__knob" style={{ transform: `translate(-50%, calc(-50% + ${knob}px))` }} />
       </div>
     </div>
   )
