@@ -1,4 +1,5 @@
-import { ControlsGuide, RULES, type InputMode } from '../ControlsGuide'
+import { ControlsGuide, type InputMode } from '../ControlsGuide'
+import { RULES } from '../rules'
 import { Sheet } from './Sheet'
 
 interface HowToPlayProps {

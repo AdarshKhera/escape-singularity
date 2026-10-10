@@ -4,6 +4,7 @@ import { MAX_LEVEL } from '../../levels/levels'
 import { levelName } from '../levelFormat'
 import { useLevelResult, useRunStats, withStarFallback } from '../gameStoreAdapters'
 import type { InputMode } from '../ControlsGuide'
+import { restartLevel, setPaused } from '../gameActions'
 import { PauseMenu } from './PauseMenu'
 import { GameOverScreen, LevelCompleteScreen, LifeLostScreen, QuitConfirm } from './EndScreens'
 import './overlays.css'
@@ -11,18 +12,6 @@ import './overlays.css'
 interface GameOverlaysProps {
   inputMode: InputMode
   onQuitToMenu: () => void
-}
-
-function setPaused(paused: boolean) {
-  const store = useGameStore.getState()
-  if (store.paused !== paused) store.togglePause()
-}
-
-/** Fresh attempt at a level: full lives, clean loadout. */
-export function restartLevel(level: number) {
-  const store = useGameStore.getState()
-  store.resetRun()
-  store.setLevel(level)
 }
 
 export function GameOverlays({ inputMode, onQuitToMenu }: GameOverlaysProps) {
