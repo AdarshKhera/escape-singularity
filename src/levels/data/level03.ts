@@ -1,0 +1,67 @@
+import type { LevelDefinition } from '../levelTypes'
+import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
+
+export const level03: LevelDefinition = {
+  id: 3,
+  name: 'Ashfall Run',
+  subtitle: 'The pull reaches further',
+  cruiseEndX: 15000,
+  approachLeadSeconds: DEFAULT_APPROACH_LEAD_SECONDS,
+  maxPull: 2350,
+  pullRange: 11000,
+  corridorHalfWidth: 195,
+  debrisSpacing: 500,
+  blockades: spreadBlockades(1, 5000, 13000),
+  blackHoleName: 'Ashfall Dark',
+  blackHoleDescription: 'Sits where a star used to burn.',
+  ...buildPlanetSystem(
+    [
+      {
+        id: 'ashfall',
+        name: 'Ashfall',
+        designation: 'GX-77',
+        gravity: '2.1 g',
+        note: 'Volcanic. Unsurveyed.',
+        radius: PLANET_RADIUS * 1.3,
+        spriteIndex: 9,
+        pullStrength: pullFromGravity(2.1),
+        escort: 'debris',
+      },
+      {
+        id: 'lumen',
+        name: 'Lumen',
+        designation: 'PSR-2b',
+        gravity: '0.9 g',
+        note: 'Ice shell over liquid ocean.',
+        radius: PLANET_RADIUS,
+        spriteIndex: 6,
+        pullStrength: pullFromGravity(0.9),
+        escort: 'moon',
+      },
+      {
+        id: 'halcyon',
+        name: 'Halcyon',
+        designation: 'KX-22a',
+        gravity: '0.4 g',
+        note: 'Low mass. Trace atmosphere.',
+        radius: PLANET_RADIUS * 0.8,
+        spriteIndex: 7,
+        pullStrength: pullFromGravity(0.4),
+      },
+      {
+        id: 'morrow',
+        name: 'Morrow',
+        designation: 'LP-6631',
+        gravity: '1.6 g',
+        note: 'Storm bands. High albedo.',
+        radius: PLANET_RADIUS * 1.2,
+        spriteIndex: 4,
+        pullStrength: pullFromGravity(1.6),
+        escort: 'debris',
+      },
+    ],
+    1400,
+    13600,
+  ),
+}

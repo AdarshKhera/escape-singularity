@@ -1,0 +1,67 @@
+import type { LevelDefinition } from '../levelTypes'
+import { buildPlanetSystem, spreadBlockades, pullFromGravity } from '../levelBuilders'
+import { PLANET_RADIUS } from '../worldConfig'
+
+export const level05: LevelDefinition = {
+  id: 5,
+  name: 'Sol System — Outer Worlds',
+  subtitle: 'Past the asteroid belt',
+  cruiseEndX: 27000,
+  approachLeadSeconds: 13,
+  maxPull: 2500,
+  pullRange: 13200,
+  corridorHalfWidth: 155,
+  debrisSpacing: 420,
+  blockades: spreadBlockades(2, 5000, 25000),
+  blackHoleName: 'Sol',
+  blackHoleDescription: 'Wider out now. It has only gotten bigger.',
+  ...buildPlanetSystem(
+    [
+      {
+        id: 'jupiter',
+        name: 'Jupiter',
+        designation: 'Sol V',
+        gravity: '2.5 g',
+        note: 'A gas giant with no floor to land on. Largest world in the system.',
+        radius: PLANET_RADIUS * 2.4,
+        spriteIndex: 8,
+        pullStrength: pullFromGravity(2.5),
+        escort: 'moon',
+      },
+      {
+        id: 'saturn',
+        name: 'Saturn',
+        designation: 'Sol VI',
+        gravity: '1.1 g',
+        note: 'Rings of ice and rock, wider than the planet itself.',
+        radius: PLANET_RADIUS * 2.1,
+        spriteIndex: 3,
+        pullStrength: pullFromGravity(1.1),
+        escort: 'debris',
+      },
+      {
+        id: 'uranus',
+        name: 'Uranus',
+        designation: 'Sol VII',
+        gravity: '0.9 g',
+        note: 'Tilted on its side. Pale cyan haze.',
+        radius: PLANET_RADIUS * 1.5,
+        spriteIndex: 4,
+        pullStrength: pullFromGravity(0.9),
+      },
+      {
+        id: 'neptune',
+        name: 'Neptune',
+        designation: 'Sol VIII',
+        gravity: '1.1 g',
+        note: 'Last world before the dark. Fastest winds in the system.',
+        radius: PLANET_RADIUS * 1.45,
+        spriteIndex: 0,
+        pullStrength: pullFromGravity(1.1),
+        escort: 'moon',
+      },
+    ],
+    1600,
+    25200,
+  ),
+}
