@@ -105,6 +105,14 @@
     padding: var(--es-space-4) var(--es-space-5);
     gap: var(--es-space-2);
   }
+
+  .es-result__stars .es-stars {
+    font-size: 32px !important;
+  }
+
+  .es-result__score {
+    font-size: 18px;
+  }
 }
 
 @media (max-width: 560px) {

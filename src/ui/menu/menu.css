@@ -169,8 +169,10 @@
     border-color 160ms ease;
 }
 
-.es-level:hover {
-  border-color: var(--es-accent);
+@media (hover: hover) {
+  .es-level:hover {
+    border-color: var(--es-accent);
+  }
 }
 
 .es-level:active {
