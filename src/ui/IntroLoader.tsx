@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { drawBlackHole } from '../render/drawBlackHole'
-import { shipThrustFrameSrc } from '../render/shipSkins'
+import { getShipSkin, shipThrustFrameSrc } from '../render/shipSkins'
+import { useGameStore } from '../state/gameStore'
 import { FONT_DISPLAY } from './fonts'
 
 interface IntroLoaderProps {
@@ -22,7 +23,8 @@ export function IntroLoader({ onFinish }: IntroLoaderProps) {
     if (!ctx) return
 
     const ship = new Image()
-    ship.src = shipThrustFrameSrc('scout', 'full', 0)
+    // the player's own ship (restored from the save before first render)
+    ship.src = shipThrustFrameSrc(getShipSkin(useGameStore.getState().shipSkinId).prefix, 'full', 0)
 
     let raf = 0
     const start = performance.now()
