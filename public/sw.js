@@ -4,18 +4,32 @@
    background refresh. Scope is the directory this file is served from, so it
    works under the GitHub Pages subpath. */
 
-const CACHE = 'escape-singularity-v1'
+// __BUILD_ID__ is replaced at build time (build/precacheManifest.ts), so every
+// deploy is a new worker with a new cache; activate drops the old ones.
+const CACHE = 'escape-singularity-__BUILD_ID__'
 const SCOPE = self.registration.scope
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com']
 
+// The page's own bundles were fetched before this worker existed, so install
+// precaches the full build list rather than relying on runtime caching.
+async function precache() {
+  const cache = await caches.open(CACHE)
+  const urls = [SCOPE]
+  try {
+    const response = await fetch(`${SCOPE}precache.json`, { cache: 'no-store' })
+    if (response.ok) {
+      const { files } = await response.json()
+      if (Array.isArray(files)) urls.push(...files.map((file) => `${SCOPE}${file}`))
+    }
+  } catch {
+    // offline during install: the runtime cache still fills as the game loads
+  }
+  // one missing file must not abort the whole install
+  await Promise.all(urls.map((url) => cache.add(url).catch(() => undefined)))
+}
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll([SCOPE, `${SCOPE}manifest.webmanifest`]))
-      .catch(() => undefined)
-      .then(() => self.skipWaiting()),
-  )
+  event.waitUntil(precache().then(() => self.skipWaiting()))
 })
 
 self.addEventListener('activate', (event) => {
