@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades, planetMidpoint } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level09: LevelDefinition = {
@@ -7,20 +7,33 @@ export const level09: LevelDefinition = {
   name: 'Perseus Fault',
   subtitle: 'The margin is gone',
   cruiseEndX: 44000,
-  approachLeadSeconds: 21,
-  maxPull: 2900,
-  pullRange: 16400,
-  corridorHalfWidth: 110,
-  debrisSpacing: 328,
+  approachLeadSeconds: 11.8,
+  maxPull: 2620,
+  pullRange: 11900,
+  corridorHalfWidth: 106,
+  debrisSpacing: 310,
   blockades: spreadBlockades(4, 5000, 42000),
+  fuelDrainMultiplier: 1.08,
+  intro: 'NEW: Ion storms sap steering and fuel',
+  hazards: {
+    driftSpeed: 105,
+    derelictChance: 0.25,
+    comets: [planetMidpoint(1600, 42400, 9, 4)],
+    showers: [planetMidpoint(1600, 42400, 9, 8)],
+    ionClouds: [
+      { worldX: planetMidpoint(1600, 42400, 9, 2), worldY: 0, length: 1800, halfHeight: 230 },
+      { worldX: planetMidpoint(1600, 42400, 9, 5), worldY: -200, length: 2000, halfHeight: 250 },
+      { worldX: planetMidpoint(1600, 42400, 9, 7), worldY: 180, length: 2000, halfHeight: 260 },
+    ],
+  },
   belts: [29000],
   blackHoleName: 'The Fault',
   blackHoleDescription: 'Space itself reads wrong this close to it.',
   extraHoles: [
     {
-      gapX: 7000,
-      approachLeadSeconds: 23,
-      radiusMultiplier: 1.7,
+      gapX: 1800,
+      approachLeadSeconds: 12.95,
+      radiusMultiplier: 1.40,
       name: 'The Deeper Fault',
       description: 'The Fault was only the outer edge of this one.',
     },

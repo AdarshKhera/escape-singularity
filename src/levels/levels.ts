@@ -9,6 +9,8 @@ import { level07 } from './data/level07'
 import { level08 } from './data/level08'
 import { level09 } from './data/level09'
 import { level10 } from './data/level10'
+import { level11 } from './data/level11'
+import { level12 } from './data/level12'
 
 export type {
   ExtraHoleDefinition,
@@ -37,6 +39,8 @@ export const LEVELS: LevelDefinition[] = [
   level08,
   level09,
   level10,
+  level11,
+  level12,
 ]
 
 export const MAX_LEVEL = LEVELS.length

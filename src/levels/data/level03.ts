@@ -1,18 +1,21 @@
 import type { LevelDefinition } from '../levelTypes'
 import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
-import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
+import { PLANET_RADIUS } from '../worldConfig'
 
 export const level03: LevelDefinition = {
   id: 3,
   name: 'Ashfall Run',
   subtitle: 'The pull reaches further',
   cruiseEndX: 15000,
-  approachLeadSeconds: DEFAULT_APPROACH_LEAD_SECONDS,
-  maxPull: 2350,
-  pullRange: 11000,
-  corridorHalfWidth: 195,
-  debrisSpacing: 500,
+  approachLeadSeconds: 10.5,
+  maxPull: 2300,
+  pullRange: 9700,
+  corridorHalfWidth: 190,
+  debrisSpacing: 480,
   blockades: spreadBlockades(1, 5000, 13000),
+  fuelDrainMultiplier: 1.1,
+  intro: 'NEW: Rockets. Fire to clear the blockade',
+  hazards: { driftSpeed: 80 },
   blackHoleName: 'Ashfall Dark',
   blackHoleDescription: 'Sits where a star used to burn.',
   ...buildPlanetSystem(

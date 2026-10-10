@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades, planetMidpoint } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level06: LevelDefinition = {
@@ -7,12 +7,19 @@ export const level06: LevelDefinition = {
   name: 'Cygnus Reach',
   subtitle: 'Past the charted edge',
   cruiseEndX: 31000,
-  approachLeadSeconds: 15,
-  maxPull: 2600,
-  pullRange: 14000,
-  corridorHalfWidth: 140,
-  debrisSpacing: 390,
+  approachLeadSeconds: 11.1,
+  maxPull: 2540,
+  pullRange: 10800,
+  corridorHalfWidth: 135,
+  debrisSpacing: 370,
   blockades: spreadBlockades(3, 5000, 29000),
+  fuelDrainMultiplier: 1.17,
+  intro: 'NEW: Rock belt. Crack it open with rockets',
+  hazards: {
+    driftSpeed: 95,
+    derelictChance: 0.22,
+    showers: [planetMidpoint(1600, 29400, 6, 2)],
+  },
   belts: [20000],
   blackHoleName: 'Cygnus Null',
   blackHoleDescription: 'Twice the mass anything before it had.',

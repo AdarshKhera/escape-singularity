@@ -17,6 +17,13 @@ export const BACKDROP_THEMES: Record<number, BackdropTheme> = {
   3: { top: 'rgba(34,16,12,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(200,90,50,0.11)' },
   4: { top: 'rgba(10,28,26,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(50,180,160,0.10)' },
   5: { top: 'rgba(28,10,18,0.6)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(210,60,90,0.12)' },
+  6: { top: 'rgba(12,18,34,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(90,130,230,0.10)' },
+  7: { top: 'rgba(30,20,10,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(220,150,60,0.10)' },
+  8: { top: 'rgba(18,10,30,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(160,90,230,0.11)' },
+  9: { top: 'rgba(30,12,12,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(230,80,60,0.11)' },
+  10: { top: 'rgba(8,8,14,0.6)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(120,110,170,0.09)' },
+  11: { top: 'rgba(10,24,22,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(60,200,170,0.10)' },
+  12: { top: 'rgba(24,8,24,0.6)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(230,70,200,0.10)' },
 }
 
 export function getBackdropTheme(level: number): BackdropTheme {

@@ -1,18 +1,21 @@
 import type { LevelDefinition } from '../levelTypes'
 import { buildPlanetSystem } from '../levelBuilders'
-import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
+import { PLANET_RADIUS } from '../worldConfig'
 
 export const level02: LevelDefinition = {
   id: 2,
   name: 'Kepler Drift',
   subtitle: 'Tighter lane',
   cruiseEndX: 12000,
-  approachLeadSeconds: DEFAULT_APPROACH_LEAD_SECONDS,
-  maxPull: 2150,
-  pullRange: 10200,
-  corridorHalfWidth: 220,
-  debrisSpacing: 560,
+  approachLeadSeconds: 10.2,
+  maxPull: 2130,
+  pullRange: 9350,
+  corridorHalfWidth: 215,
+  debrisSpacing: 540,
   blockades: [],
+  fuelDrainMultiplier: 1.07,
+  intro: 'NEW: Asteroids drift into your lane',
+  hazards: { driftSpeed: 70 },
   blackHoleName: 'The Tithe',
   blackHoleDescription: 'Named for the ships it has already taken.',
   ...buildPlanetSystem(

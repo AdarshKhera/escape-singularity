@@ -10,7 +10,7 @@ import {
   SHIELD_UNLOCK_LEVEL,
   WEAPON_UNLOCK_LEVEL,
 } from '../levels/worldConfig'
-import type { LevelDefinition } from '../levels/levels'
+import type { HoleSegment, LevelDefinition } from '../levels/levels'
 import { addObstacle, type GameWorld, type ObstacleType } from './world'
 
 // how far ahead of the ship things are spawned
@@ -48,11 +48,43 @@ const DERELICT_THICKNESS = 13
 // debris flanks the clear central corridor, only during the cruise. From
 // level 2 on, rocks carry their own slow lateral drift, so the corridor
 // isn't a fixed safe line; later levels mix in spinning derelicts.
-function spawnDebris(world: GameWorld, level: LevelDefinition, shipWorldX: number): void {
+// Running low makes fuel orbs more common, so a rough patch of flying is a
+// setback rather than a guaranteed dead end before the cache.
+const LOW_FUEL_FRACTION = 0.3
+const LOW_FUEL_ORB_CHANCE = 0.35
+
+// Debris runs through each hole's cruise: from the level start to the first
+// cruise end, then after each escape (past a short calm) up to the next
+// hole's cruise end.
+const POST_ESCAPE_CALM = 1200
+
+function debrisWindowFor(segments: HoleSegment[], x: number): { start: number; end: number } | null {
+  for (let i = 0; i < segments.length; i++) {
+    const start = i === 0 ? 0 : segments[i - 1].levelEndX + POST_ESCAPE_CALM
+    const end = segments[i].cruiseEndX
+    if (x < end) return { start, end }
+  }
+  return null
+}
+
+function spawnDebris(
+  world: GameWorld,
+  level: LevelDefinition,
+  segments: HoleSegment[],
+  shipWorldX: number,
+  fuelFraction: number,
+): void {
   const drift = level.hazards?.driftSpeed ?? 0
   const derelictChance = level.hazards?.derelictChance ?? 0
-  while (world.nextSpawnWorldX < Math.min(shipWorldX + SPAWN_LOOKAHEAD, level.cruiseEndX)) {
+  for (;;) {
+    const span = debrisWindowFor(segments, world.nextSpawnWorldX)
+    if (!span) return
+    if (world.nextSpawnWorldX < span.start) world.nextSpawnWorldX = span.start
+    if (world.nextSpawnWorldX >= Math.min(shipWorldX + SPAWN_LOOKAHEAD, span.end)) return
     let type = pickDebrisType(Math.random(), level.id)
+    if (type === 'asteroid' && fuelFraction < LOW_FUEL_FRACTION && Math.random() < LOW_FUEL_ORB_CHANCE) {
+      type = 'satellite'
+    }
     if (type === 'asteroid' && Math.random() < derelictChance) type = 'derelict'
     const side = Math.random() < 0.5 ? -1 : 1
     const corridor = level.corridorHalfWidth
@@ -146,8 +178,14 @@ function spawnEscorts(world: GameWorld, level: LevelDefinition, shipWorldX: numb
   })
 }
 
-export function runSpawners(world: GameWorld, level: LevelDefinition, shipWorldX: number): void {
-  spawnDebris(world, level, shipWorldX)
+export function runSpawners(
+  world: GameWorld,
+  level: LevelDefinition,
+  segments: HoleSegment[],
+  shipWorldX: number,
+  fuelFraction: number,
+): void {
+  spawnDebris(world, level, segments, shipWorldX, fuelFraction)
   spawnBlockades(world, level, shipWorldX)
   spawnBelts(world, level, shipWorldX)
   spawnEscorts(world, level, shipWorldX)

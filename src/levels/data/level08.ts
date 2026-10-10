@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades, planetMidpoint } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level08: LevelDefinition = {
@@ -7,19 +7,27 @@ export const level08: LevelDefinition = {
   name: "Orion's Rim",
   subtitle: 'Everything is closer than it looks',
   cruiseEndX: 39000,
-  approachLeadSeconds: 19,
-  maxPull: 2800,
-  pullRange: 15600,
-  corridorHalfWidth: 118,
-  debrisSpacing: 345,
+  approachLeadSeconds: 11.6,
+  maxPull: 2570,
+  pullRange: 11550,
+  corridorHalfWidth: 114,
+  debrisSpacing: 325,
   blockades: spreadBlockades(4, 5000, 37000),
+  fuelDrainMultiplier: 1.08,
+  intro: 'NEW: A second, bigger hole waits past the first',
+  hazards: {
+    driftSpeed: 100,
+    derelictChance: 0.24,
+    comets: [2, 5].map((k) => planetMidpoint(1600, 37400, 8, k)),
+    showers: [3, 6].map((k) => planetMidpoint(1600, 37400, 8, k)),
+  },
   blackHoleName: 'The Rimward Dark',
   blackHoleDescription: 'Nobody has mapped what is past it.',
   extraHoles: [
     {
-      gapX: 7000,
-      approachLeadSeconds: 21,
-      radiusMultiplier: 1.5,
+      gapX: 1800,
+      approachLeadSeconds: 12.77,
+      radiusMultiplier: 1.38,
       name: "The Rim's End",
       description: 'What the Rimward Dark was hiding. Larger than the first by far.',
     },

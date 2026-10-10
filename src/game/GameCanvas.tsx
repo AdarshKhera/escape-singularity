@@ -92,6 +92,7 @@ export function GameCanvas() {
         updatePlaying(world, {
           level,
           layout,
+          segments,
           levelEndX: segments[segments.length - 1].levelEndX,
           dt,
         })

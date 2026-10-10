@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades, planetMidpoint } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level10: LevelDefinition = {
@@ -7,19 +7,33 @@ export const level10: LevelDefinition = {
   name: 'The Maw',
   subtitle: 'It has been waiting',
   cruiseEndX: 49000,
-  approachLeadSeconds: 23,
-  maxPull: 3000,
-  pullRange: 17200,
-  corridorHalfWidth: 102,
-  debrisSpacing: 312,
+  approachLeadSeconds: 12.05,
+  maxPull: 2630,
+  pullRange: 12270,
+  corridorHalfWidth: 100,
+  debrisSpacing: 295,
   blockades: spreadBlockades(5, 5000, 47000),
+  fuelDrainMultiplier: 1.1,
+  intro: "NEW: Gravity wells pulse. Cross while they're dark",
+  hazards: {
+    driftSpeed: 110,
+    derelictChance: 0.25,
+    comets: [3, 7].map((k) => planetMidpoint(1600, 47400, 10, k)),
+    showers: [planetMidpoint(1600, 47400, 10, 4)],
+    ionClouds: [{ worldX: planetMidpoint(1600, 47400, 10, 6), worldY: 0, length: 2000, halfHeight: 250 }],
+    gravityWells: [
+      { worldX: planetMidpoint(1600, 47400, 10, 2), worldY: -240, strength: 1500, period: 3.2 },
+      { worldX: planetMidpoint(1600, 47400, 10, 5), worldY: 240, strength: 1650, period: 3, phase: 1.2 },
+      { worldX: planetMidpoint(1600, 47400, 10, 8), worldY: -220, strength: 1750, period: 2.8, phase: 2.4 },
+    ],
+  },
   blackHoleName: 'The Maw',
   blackHoleDescription: 'Not the last one. There is worse still ahead.',
   extraHoles: [
     {
-      gapX: 7500,
-      approachLeadSeconds: 26,
-      radiusMultiplier: 2.0,
+      gapX: 1800,
+      approachLeadSeconds: 13.14,
+      radiusMultiplier: 1.41,
       name: "The Maw's Throat",
       description: 'Past the first Maw, the real one waits. There is no chart past this.',
     },

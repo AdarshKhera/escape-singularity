@@ -19,6 +19,12 @@ export interface PassPolicy {
   commitOffset: number
   /** how far beyond the horizon the autopilot tries to hold, as a radius multiple */
   clearanceFactor?: number
+  /**
+   * Fly like a nervous human: once committed, hold the turn continuously
+   * (even pinned against the lane edge) until well past the hole. Burns far
+   * more fuel than the efficient line; every level must still allow it.
+   */
+  sloppy?: boolean
 }
 
 export interface PassResult {
@@ -44,6 +50,7 @@ function wantsToSteer(
   if (ship.worldX < commitX) return false
   const out = ship.lateral * policy.side
   const dx = ship.worldX - holeX
+  if (policy.sloppy) return dx < holeRadius * 0.6
   const factor = policy.clearanceFactor ?? 1.35
   if (dx < 0) return out < Math.min(holeRadius * factor, laneBound - 1)
   // past the hole: only hold enough height that the horizon stays behind us

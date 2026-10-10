@@ -1,18 +1,20 @@
 import type { LevelDefinition } from '../levelTypes'
 import { buildPlanetSystem } from '../levelBuilders'
-import { DEFAULT_APPROACH_LEAD_SECONDS, PLANET_RADIUS } from '../worldConfig'
+import { PLANET_RADIUS } from '../worldConfig'
 
 export const level01: LevelDefinition = {
   id: 1,
   name: 'First Light',
   subtitle: 'Learn the turn',
   cruiseEndX: 9000,
-  approachLeadSeconds: DEFAULT_APPROACH_LEAD_SECONDS,
-  maxPull: 1950,
-  pullRange: 9500,
-  corridorHalfWidth: 260,
-  debrisSpacing: 620,
+  approachLeadSeconds: 10,
+  maxPull: 1820,
+  pullRange: 9000,
+  corridorHalfWidth: 255,
+  debrisSpacing: 600,
   blockades: [],
+  fuelDrainMultiplier: 1.04,
+  intro: 'Skim a planet to slingshot. Never touch its core.',
   blackHoleName: 'Cradlefall',
   blackHoleDescription: 'A young collapse. Still small, still learnable.',
   ...buildPlanetSystem(

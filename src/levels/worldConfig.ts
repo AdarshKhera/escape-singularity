@@ -46,6 +46,11 @@ export interface LevelLayout {
   zoomSpan: number
 }
 
+// how far before the cruise end the reveal (camera pull-back) begins
+export function computeRevealLead(approachLeadSeconds: number = DEFAULT_APPROACH_LEAD_SECONDS): number {
+  return Math.round(REFERENCE_SPEED * approachLeadSeconds * REVEAL_LEAD_RATIO)
+}
+
 export function computeLevelLayout(
   cruiseEndX: number,
   approachLeadSeconds: number = DEFAULT_APPROACH_LEAD_SECONDS,

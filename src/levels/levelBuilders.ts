@@ -60,3 +60,10 @@ export function spreadBlockades(count: number, start: number, end: number): numb
     Math.round(start + ((end - start) * (i + 1)) / (count + 1)),
   )
 }
+
+// The worldX halfway between planet k-1 and planet k of a system built by
+// buildPlanetSystem(seeds, start, end) with n planets (k in 1..n-1). Cruise
+// hazards are placed here so they never stack on top of a world.
+export function planetMidpoint(start: number, end: number, n: number, k: number): number {
+  return Math.round(start + ((end - start) * k) / n)
+}

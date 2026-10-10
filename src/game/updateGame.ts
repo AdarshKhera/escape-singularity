@@ -34,6 +34,8 @@ const RUN_TIME_PUSH_MS = 250
 export interface FrameContext {
   level: LevelDefinition
   layout: HoleSegment
+  /** every hole passage in the level, in order */
+  segments: HoleSegment[]
   /** end of the whole level: the LAST hole segment's levelEndX */
   levelEndX: number
   /** simulation seconds this frame (already time-scaled) */
@@ -175,7 +177,7 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
   updateInvulnerability(world, dt)
   updateRunClock(world, dt)
   emitThrusters(world, next, controls, phase, dt)
-  runSpawners(world, level, next.worldX)
+  runSpawners(world, level, frame.segments, next.worldX, useGameStore.getState().fuel / FUEL_MAX)
   updateHazards(world, level, next.worldX, next.lateral, dt)
   updatePlanets(world, level, layout.blackHoleX, next.worldX, next.lateral, time)
   resolveObstacleCollisions(world, next.worldX, next.lateral)

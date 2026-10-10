@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades, planetMidpoint } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level05: LevelDefinition = {
@@ -7,12 +7,19 @@ export const level05: LevelDefinition = {
   name: 'Sol System: Outer Worlds',
   subtitle: 'Past the asteroid belt',
   cruiseEndX: 27000,
-  approachLeadSeconds: 13,
-  maxPull: 2500,
-  pullRange: 13200,
-  corridorHalfWidth: 155,
-  debrisSpacing: 420,
+  approachLeadSeconds: 10.9,
+  maxPull: 2450,
+  pullRange: 10450,
+  corridorHalfWidth: 150,
+  debrisSpacing: 400,
   blockades: spreadBlockades(2, 5000, 25000),
+  fuelDrainMultiplier: 1.15,
+  intro: 'NEW: Meteor showers. Find the gap',
+  hazards: {
+    driftSpeed: 90,
+    derelictChance: 0.2,
+    showers: [planetMidpoint(1600, 25200, 4, 1), planetMidpoint(1600, 25200, 4, 3)],
+  },
   blackHoleName: 'Sol',
   blackHoleDescription: 'Wider out now. It has only gotten bigger.',
   ...buildPlanetSystem(

@@ -2,7 +2,7 @@ import type { EscortDefinition, PlanetDefinition } from './planets'
 import type { LevelLayout } from './worldConfig'
 
 export interface ExtraHoleDefinition {
-  /** empty stretch of cruise between the first hole's escape and this one's approach */
+  /** calm stretch between the previous hole's level end and the start of this hole's debris run and reveal */
   gapX: number
   approachLeadSeconds: number
   /** relative to the standard hole radius — this is the "exponentially bigger" second pass */

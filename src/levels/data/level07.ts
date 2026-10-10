@@ -1,5 +1,5 @@
 import type { LevelDefinition } from '../levelTypes'
-import { buildPlanetSystem, spreadBlockades } from '../levelBuilders'
+import { buildPlanetSystem, spreadBlockades, planetMidpoint } from '../levelBuilders'
 import { PLANET_RADIUS } from '../worldConfig'
 
 export const level07: LevelDefinition = {
@@ -7,12 +7,20 @@ export const level07: LevelDefinition = {
   name: 'Vela Drift',
   subtitle: 'Debris on every line',
   cruiseEndX: 35000,
-  approachLeadSeconds: 17,
-  maxPull: 2700,
-  pullRange: 14800,
-  corridorHalfWidth: 128,
-  debrisSpacing: 365,
+  approachLeadSeconds: 11.4,
+  maxPull: 2580,
+  pullRange: 11200,
+  corridorHalfWidth: 124,
+  debrisSpacing: 345,
   blockades: spreadBlockades(3, 5000, 33000),
+  fuelDrainMultiplier: 1.2,
+  intro: 'NEW: Comets cut across your lane',
+  hazards: {
+    driftSpeed: 100,
+    derelictChance: 0.22,
+    comets: [2, 4, 6].map((k) => planetMidpoint(1600, 33400, 7, k)),
+    showers: [planetMidpoint(1600, 33400, 7, 3)],
+  },
   blackHoleName: 'Velatine',
   blackHoleDescription: 'The Drift is what is left orbiting it.',
   ...buildPlanetSystem(
