@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 
 type ButtonVariant = 'default' | 'primary' | 'ghost' | 'danger'
 
@@ -28,10 +28,24 @@ interface OverlayProps {
   width?: number
 }
 
+// Overlays can appear mid-touch (a level ends while a thumb is on Thrust),
+// so they ignore taps briefly; otherwise a finger lifting from a control
+// could press whatever button just appeared under it.
+const OVERLAY_ARM_MS = 350
+
 export function Overlay({ children, label, width }: OverlayProps) {
+  const [armed, setArmed] = useState(false)
+  useEffect(() => {
+    const timer = window.setTimeout(() => setArmed(true), OVERLAY_ARM_MS)
+    return () => window.clearTimeout(timer)
+  }, [])
+
   return (
     <div className="es-overlay" role="dialog" aria-modal="true" aria-label={label}>
-      <div className="es-overlay__card es-panel" style={width ? { width: `min(${width}px, 100%)` } : undefined}>
+      <div
+        className="es-overlay__card es-panel"
+        style={{ width: width ? `min(${width}px, 100%)` : undefined, pointerEvents: armed ? undefined : 'none' }}
+      >
         {children}
       </div>
     </div>
