@@ -1,113 +1,44 @@
-import { type CSSProperties } from 'react'
-import { SHIP_SKINS, shipThrustFrameSrc } from '../render/shipSkins'
+import { SHIP_SKINS, getShipSkin, shipThrustFrameSrc } from '../render/shipSkins'
 
 interface ShipSelectorProps {
   selectedId: string
   onSelect: (id: string) => void
 }
 
-const PREVIEW_SIZE = 96
-
-// One ship at a time with left/right paging, rather than every option at once.
+// Large preview of the chosen craft beside a thumb-sized grid of every ship,
+// so picking one is a single tap rather than paging with arrows.
 export function ShipSelector({ selectedId, onSelect }: ShipSelectorProps) {
-  const index = Math.max(
-    0,
-    SHIP_SKINS.findIndex((s) => s.id === selectedId),
-  )
-  const skin = SHIP_SKINS[index]
-
-  const step = (delta: number) => {
-    const next = (index + delta + SHIP_SKINS.length) % SHIP_SKINS.length
-    onSelect(SHIP_SKINS[next].id)
-  }
+  const skin = getShipSkin(selectedId)
 
   return (
-    <div style={wrapStyle}>
-      <button style={arrowStyle} onClick={() => step(-1)} aria-label="Previous ship">
-        ‹
-      </button>
-
-      <div style={stageStyle}>
+    <div className="es-hangar">
+      <div className="es-hangar__stage">
         <img
+          key={skin.id}
+          className="es-hangar__preview"
           src={shipThrustFrameSrc(skin.prefix, 'full', 1)}
           alt={skin.label}
-          width={PREVIEW_SIZE}
-          height={PREVIEW_SIZE}
-          style={{ imageRendering: 'pixelated' }}
+          draggable={false}
         />
-        <div style={nameStyle}>{skin.label}</div>
-        <div style={detailStyle}>{skin.detail}</div>
-        <div style={dotsStyle}>
-          {SHIP_SKINS.map((s, i) => (
-            <span
-              key={s.id}
-              style={{
-                ...dotStyle,
-                background: i === index ? '#3fd6ff' : 'rgba(191,227,255,0.25)',
-              }}
-            />
-          ))}
-        </div>
+        <div className="es-hangar__name">{skin.label}</div>
+        <div className="es-label">{skin.detail.replace(/\s*·\s*/g, ' / ')}</div>
       </div>
 
-      <button style={arrowStyle} onClick={() => step(1)} aria-label="Next ship">
-        ›
-      </button>
+      <div className="es-hangar__grid" role="radiogroup" aria-label="Ship">
+        {SHIP_SKINS.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            role="radio"
+            aria-checked={s.id === skin.id}
+            aria-label={s.label}
+            className="es-hangar__thumb"
+            onClick={() => onSelect(s.id)}
+          >
+            <img src={shipThrustFrameSrc(s.prefix, 'full', 0)} alt="" draggable={false} />
+          </button>
+        ))}
+      </div>
     </div>
   )
-}
-
-const wrapStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 14,
-}
-
-const stageStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 4,
-  minWidth: 170,
-}
-
-const nameStyle: CSSProperties = {
-  fontFamily: 'monospace',
-  fontSize: 12,
-  letterSpacing: 2,
-  textTransform: 'uppercase',
-  color: '#3fd6ff',
-}
-
-const detailStyle: CSSProperties = {
-  fontFamily: 'monospace',
-  fontSize: 9,
-  opacity: 0.5,
-}
-
-const dotsStyle: CSSProperties = {
-  display: 'flex',
-  gap: 5,
-  marginTop: 2,
-}
-
-const dotStyle: CSSProperties = {
-  width: 5,
-  height: 5,
-  borderRadius: '50%',
-  display: 'inline-block',
-}
-
-const arrowStyle: CSSProperties = {
-  width: 32,
-  height: 32,
-  fontFamily: 'monospace',
-  fontSize: 18,
-  lineHeight: 1,
-  background: 'transparent',
-  border: '1px solid rgba(191,227,255,0.25)',
-  borderRadius: 4,
-  color: '#bfe3ff',
-  cursor: 'pointer',
 }
