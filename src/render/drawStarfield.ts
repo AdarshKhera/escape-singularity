@@ -37,19 +37,30 @@ interface StarfieldOptions {
   scrollSpeed?: number
   /** skip clearing, when something has already painted the backdrop */
   skipClear?: boolean
+  /** logical (CSS px) viewport size; the backing store may be DPR-scaled */
+  width?: number
+  height?: number
 }
 
 export function drawStarfield(
   ctx: CanvasRenderingContext2D,
   stars: Star[],
-  { time, visibleFraction, warp, streak = 0, scrollSpeed = 0, skipClear = false }: StarfieldOptions,
+  {
+    time,
+    visibleFraction,
+    warp,
+    streak = 0,
+    scrollSpeed = 0,
+    skipClear = false,
+    width = ctx.canvas.width,
+    height = ctx.canvas.height,
+  }: StarfieldOptions,
 ) {
   if (!skipClear) {
     ctx.fillStyle = '#000000'
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.fillRect(0, 0, width, height)
   }
 
-  const width = ctx.canvas.width
   const scrollOffset = scrollSpeed > 0 ? (time * scrollSpeed) % (width + 400) : 0
 
   for (const star of stars) {
@@ -95,10 +106,15 @@ export function drawStarfield(
       ctx.lineTo(drawX + length, drawY)
       ctx.stroke()
     } else {
+      // tiny stars read identically as squares and skip the path work
       ctx.fillStyle = '#ffffff'
-      ctx.beginPath()
-      ctx.arc(drawX, drawY, star.size, 0, Math.PI * 2)
-      ctx.fill()
+      if (star.size < 1.3) {
+        ctx.fillRect(drawX - star.size, drawY - star.size, star.size * 2, star.size * 2)
+      } else {
+        ctx.beginPath()
+        ctx.arc(drawX, drawY, star.size, 0, Math.PI * 2)
+        ctx.fill()
+      }
     }
   }
   ctx.globalAlpha = 1

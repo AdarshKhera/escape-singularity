@@ -1,3 +1,5 @@
+import { cachedGradient } from './gradientCache'
+
 export interface BackdropTheme {
   /** two stops, top and bottom, both very low alpha */
   top: string
@@ -15,6 +17,13 @@ export const BACKDROP_THEMES: Record<number, BackdropTheme> = {
   3: { top: 'rgba(34,16,12,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(200,90,50,0.11)' },
   4: { top: 'rgba(10,28,26,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(50,180,160,0.10)' },
   5: { top: 'rgba(28,10,18,0.6)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(210,60,90,0.12)' },
+  6: { top: 'rgba(12,18,34,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(90,130,230,0.10)' },
+  7: { top: 'rgba(30,20,10,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(220,150,60,0.10)' },
+  8: { top: 'rgba(18,10,30,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(160,90,230,0.11)' },
+  9: { top: 'rgba(30,12,12,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(230,80,60,0.11)' },
+  10: { top: 'rgba(8,8,14,0.6)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(120,110,170,0.09)' },
+  11: { top: 'rgba(10,24,22,0.55)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(60,200,170,0.10)' },
+  12: { top: 'rgba(24,8,24,0.6)', bottom: 'rgba(0,0,0,0)', bloom: 'rgba(230,70,200,0.10)' },
 }
 
 export function getBackdropTheme(level: number): BackdropTheme {
@@ -35,23 +44,29 @@ export function drawBackdrop(
   ctx.save()
   ctx.globalAlpha = fade
 
-  const wash = ctx.createLinearGradient(0, 0, 0, height)
-  wash.addColorStop(0, theme.top)
-  wash.addColorStop(1, theme.bottom)
-  ctx.fillStyle = wash
+  // rebuilt only when the viewport or theme changes, not every frame
+  const key = `${width}x${height}:${theme.top}:${theme.bloom}`
+  ctx.fillStyle = cachedGradient(ctx, `backdrop:wash:${key}`, (c) => {
+    const wash = c.createLinearGradient(0, 0, 0, height)
+    wash.addColorStop(0, theme.top)
+    wash.addColorStop(1, theme.bottom)
+    return wash
+  })
   ctx.fillRect(0, 0, width, height)
 
-  const bloom = ctx.createRadialGradient(
-    width * 0.28,
-    height * 0.32,
-    0,
-    width * 0.28,
-    height * 0.32,
-    Math.max(width, height) * 0.7,
-  )
-  bloom.addColorStop(0, theme.bloom)
-  bloom.addColorStop(1, 'rgba(0,0,0,0)')
-  ctx.fillStyle = bloom
+  ctx.fillStyle = cachedGradient(ctx, `backdrop:bloom:${key}`, (c) => {
+    const bloom = c.createRadialGradient(
+      width * 0.28,
+      height * 0.32,
+      0,
+      width * 0.28,
+      height * 0.32,
+      Math.max(width, height) * 0.7,
+    )
+    bloom.addColorStop(0, theme.bloom)
+    bloom.addColorStop(1, 'rgba(0,0,0,0)')
+    return bloom
+  })
   ctx.fillRect(0, 0, width, height)
 
   ctx.restore()

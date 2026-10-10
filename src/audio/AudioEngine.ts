@@ -1,4 +1,51 @@
 import { TRACKS, type TrackDefinition } from './tracks'
+import { createNoiseBuffer, playSfxVoice, type SfxKind } from './sfx'
+
+export type { SfxKind } from './sfx'
+
+const MASTER_LEVEL = 0.9
+const MUSIC_LEVEL = 0.5
+const SFX_LEVEL = 0.7
+// the same effect can't retrigger faster than this (rocket spam, debris storms)
+const SFX_MIN_INTERVAL_MS = 45
+const PREFS_KEY = 'escape-singularity:audio:v1'
+
+interface AudioPrefs {
+  muted: boolean
+  musicMuted: boolean
+  sfxMuted: boolean
+}
+
+function loadPrefs(): AudioPrefs {
+  const fallback = { muted: false, musicMuted: false, sfxMuted: false }
+  try {
+    const raw = globalThis.localStorage?.getItem(PREFS_KEY)
+    if (!raw) return fallback
+    const parsed = JSON.parse(raw) as Partial<AudioPrefs>
+    return {
+      muted: parsed.muted === true,
+      musicMuted: parsed.musicMuted === true,
+      sfxMuted: parsed.sfxMuted === true,
+    }
+  } catch {
+    return fallback
+  }
+}
+
+function savePrefs(prefs: AudioPrefs) {
+  try {
+    globalThis.localStorage?.setItem(PREFS_KEY, JSON.stringify(prefs))
+  } catch {
+    // storage unavailable: preferences just don't persist
+  }
+}
+
+type AudioContextCtor = typeof AudioContext
+
+function resolveAudioContext(): AudioContextCtor | null {
+  const w = globalThis as typeof globalThis & { webkitAudioContext?: AudioContextCtor }
+  return w.AudioContext ?? w.webkitAudioContext ?? null
+}
 
 // Everything here is synthesised at runtime with the Web Audio API — there are
 // no audio files in this project, licensed or otherwise.
@@ -6,6 +53,9 @@ export class AudioEngine {
   private context: AudioContext | null = null
   private masterGain: GainNode | null = null
   private musicGain: GainNode | null = null
+  private sfxGain: GainNode | null = null
+  private noise: AudioBuffer | null = null
+  private lastSfxAt: Partial<Record<SfxKind, number>> = {}
 
   private rumbleSource: AudioBufferSourceNode | null = null
   private rumbleGain: GainNode | null = null
@@ -15,35 +65,84 @@ export class AudioEngine {
   private chordTimer: number | null = null
   private tickTimer: number | null = null
   private currentTrack: TrackDefinition | null = null
-  private muted = false
+  private muted: boolean
+  private musicMuted: boolean
+  private sfxMuted: boolean
+
+  constructor() {
+    const prefs = loadPrefs()
+    this.muted = prefs.muted
+    this.musicMuted = prefs.musicMuted
+    this.sfxMuted = prefs.sfxMuted
+  }
 
   get ready(): boolean {
     return this.context !== null
   }
 
-  get isMuted(): boolean {
-    return this.muted
-  }
+  /** master mute (everything). An arrow property so it can be passed as a callback. */
+  isMuted = (): boolean => this.muted
+  isMusicMuted = (): boolean => this.musicMuted
+  isSfxMuted = (): boolean => this.sfxMuted
 
   get trackId(): string | null {
     return this.currentTrack?.id ?? null
   }
 
   // Must be called from a user gesture — browsers block audio otherwise.
+  // Audio is optional: if the platform refuses a context, the game runs silent.
   start() {
-    if (this.context) return
-    const context = new AudioContext()
+    if (this.context) {
+      void this.context.resume().catch(() => undefined)
+      return
+    }
+    const Ctor = resolveAudioContext()
+    if (!Ctor) return
+    let context: AudioContext
+    try {
+      context = new Ctor()
+    } catch {
+      return
+    }
     this.context = context
 
     this.masterGain = context.createGain()
-    this.masterGain.gain.value = this.muted ? 0 : 0.9
+    this.masterGain.gain.value = this.muted ? 0 : MASTER_LEVEL
     this.masterGain.connect(context.destination)
 
     this.musicGain = context.createGain()
-    this.musicGain.gain.value = 0.5
+    this.musicGain.gain.value = this.musicMuted ? 0 : MUSIC_LEVEL
     this.musicGain.connect(this.masterGain)
 
+    this.sfxGain = context.createGain()
+    this.sfxGain.gain.value = this.sfxMuted ? 0 : SFX_LEVEL
+    this.sfxGain.connect(this.masterGain)
+    this.noise = createNoiseBuffer(context)
+
     this.setupRumble(context)
+    document.addEventListener('visibilitychange', this.onVisibilityChange)
+  }
+
+  // phones: stop the synth when the app is backgrounded, pick it up on return
+  private onVisibilityChange = () => {
+    if (!this.context) return
+    const action = document.hidden ? this.context.suspend() : this.context.resume()
+    void action.catch(() => undefined)
+  }
+
+  /** one-shot effect; intensity ~0.2..1.5 scales the louder voices */
+  playSfx(kind: SfxKind, intensity = 1) {
+    if (!this.context || !this.sfxGain || !this.noise) return
+    if (this.muted || this.sfxMuted) return
+    const now = performance.now()
+    const last = this.lastSfxAt[kind] ?? 0
+    if (now - last < SFX_MIN_INTERVAL_MS) return
+    this.lastSfxAt[kind] = now
+    try {
+      playSfxVoice({ ctx: this.context, out: this.sfxGain, noise: this.noise }, kind, intensity)
+    } catch {
+      // a voice failing to schedule must never take the game loop down
+    }
   }
 
   private setupRumble(context: AudioContext) {
@@ -163,22 +262,50 @@ export class AudioEngine {
     this.currentTrack = null
   }
 
+  private persist() {
+    savePrefs({ muted: this.muted, musicMuted: this.musicMuted, sfxMuted: this.sfxMuted })
+  }
+
+  private fadeTo(gain: GainNode | null, value: number) {
+    if (!this.context || !gain) return
+    gain.gain.setTargetAtTime(value, this.context.currentTime, 0.1)
+  }
+
   toggleMute(): boolean {
-    this.muted = !this.muted
-    if (this.context && this.masterGain) {
-      this.masterGain.gain.setTargetAtTime(
-        this.muted ? 0 : 0.9,
-        this.context.currentTime,
-        0.1,
-      )
-    }
+    this.setMuted(!this.muted)
     return this.muted
+  }
+
+  /** master mute: silences music, effects and rumble together */
+  setMuted(muted: boolean) {
+    this.muted = muted
+    this.fadeTo(this.masterGain, muted ? 0 : MASTER_LEVEL)
+    this.persist()
+  }
+
+  /** music only; effects keep playing */
+  setMusicMuted(muted: boolean) {
+    this.musicMuted = muted
+    this.fadeTo(this.musicGain, muted ? 0 : MUSIC_LEVEL)
+    this.persist()
+  }
+
+  /** sound effects only; music keeps playing */
+  setSfxMuted(muted: boolean) {
+    this.sfxMuted = muted
+    this.fadeTo(this.sfxGain, muted ? 0 : SFX_LEVEL)
+    this.persist()
   }
 
   dispose() {
     this.stopTrack()
-    this.rumbleSource?.stop()
-    this.context?.close()
+    document.removeEventListener('visibilitychange', this.onVisibilityChange)
+    try {
+      this.rumbleSource?.stop()
+    } catch {
+      // already stopped
+    }
+    void this.context?.close().catch(() => undefined)
     this.context = null
   }
 }

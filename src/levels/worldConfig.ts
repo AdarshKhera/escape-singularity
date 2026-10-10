@@ -46,6 +46,11 @@ export interface LevelLayout {
   zoomSpan: number
 }
 
+// how far before the cruise end the reveal (camera pull-back) begins
+export function computeRevealLead(approachLeadSeconds: number = DEFAULT_APPROACH_LEAD_SECONDS): number {
+  return Math.round(REFERENCE_SPEED * approachLeadSeconds * REVEAL_LEAD_RATIO)
+}
+
 export function computeLevelLayout(
   cruiseEndX: number,
   approachLeadSeconds: number = DEFAULT_APPROACH_LEAD_SECONDS,
@@ -80,6 +85,16 @@ export const FUEL_CACHE_RADIUS = 44
 // play once the approach has opened up the camera; see CRUISE_LANE_BOUND for
 // the tighter clamp used beforehand.
 export const LANE_BOUND = 5200
+
+// The escape lane scales with the hole it has to clear. A fixed bound broke
+// the bigger second holes on late levels: a 6000-radius horizon behind a
+// 5200 lane clamp is mathematically unescapable. Every hole now gets the
+// same proportional headroom the original 3000-radius hole was tuned with.
+export const LANE_BOUND_RATIO = LANE_BOUND / BLACK_HOLE_RADIUS
+
+export function laneBoundForHole(holeRadius: number): number {
+  return holeRadius * LANE_BOUND_RATIO
+}
 
 // During ordinary cruise flight the camera doesn't have room to follow the
 // ship as far as the full LANE_BOUND allows, so straying that far would push
