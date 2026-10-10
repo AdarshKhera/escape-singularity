@@ -142,6 +142,9 @@ function freshFlight() {
     shipLateral: 0,
     shipLateralVelocity: 0,
     shipForwardSpeed: THROTTLE_IDLE_SPEED,
+    // a key or touch held through a death or a quit must not carry over
+    bankInput: 0 as const,
+    throttleInput: 0 as const,
     status: 'playing' as RunStatus,
     phase: 'cruise' as LevelPhase,
     invulnerable: false,
@@ -280,8 +283,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
   },
 
-  // restart the run from the beginning of the level, keeping lives lost
-  respawn: () => set(freshFlight()),
+  // restart from the beginning of the level, keeping lives lost and the
+  // loadout; the tank refills since the run (and its fuel cache) rewinds too
+  respawn: () => set({ ...freshFlight(), fuel: FUEL_MAX }),
 
   resetRun: () =>
     set({

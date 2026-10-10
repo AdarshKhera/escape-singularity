@@ -145,7 +145,10 @@ export interface GameWorld {
   viewScale: number
 }
 
-export function createWorld(): GameWorld {
+// Request ids are monotonic in the store and survive a quit to menu, so a
+// freshly mounted world must start from the current ids or the last boost or
+// shot of the previous session replays on the first frame.
+export function createWorld(requestIds: { boost: number; fire: number }): GameWorld {
   return {
     obstacles: [],
     projectiles: [],
@@ -168,7 +171,7 @@ export function createWorld(): GameWorld {
     boostTimer: 0,
     smoothedBoost: 0,
     boostCooldown: 0,
-    lastBoostRequestId: 0,
+    lastBoostRequestId: requestIds.boost,
     fuelCacheTaken: false,
     refuelMessageTimer: 0,
     pickupBoostTimer: 0,
@@ -182,7 +185,7 @@ export function createWorld(): GameWorld {
     planetPasses: new Map(),
     escapedHoles: new Set(),
     segmentMinGap: Infinity,
-    lastFireRequestId: 0,
+    lastFireRequestId: requestIds.fire,
     eventBanner: null,
     eventBannerTimer: 0,
     introShown: false,

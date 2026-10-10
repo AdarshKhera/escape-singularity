@@ -33,12 +33,17 @@ export function GameCanvas() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const world = createWorld()
+    const { boostRequestId, fireRequestId } = useGameStore.getState()
+    const world = createWorld({ boost: boostRequestId, fire: fireRequestId })
     const frame = createCameraFrame()
     const sprites = loadSprites()
     let stars: Star[] = []
     let viewWidth = 0
     let viewHeight = 0
+    // resizing clears the canvas; while paused the loop doesn't draw, so the
+    // last frame has to be repainted once or the pause menu sits on black
+    let lastRender: Parameters<typeof renderFrame>[0] | null = null
+    let redrawWhilePaused = false
 
     // The backing store follows devicePixelRatio (capped for fill-rate on
     // phones) so sprites and lines stay crisp; everything else draws in CSS
@@ -52,6 +57,7 @@ export function GameCanvas() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       stars = generateStars(STAR_COUNT, viewWidth, viewHeight)
       frame.shipXRatio = shipScreenXRatio()
+      redrawWhilePaused = true
     }
     resize()
     window.addEventListener('resize', resize)
@@ -65,8 +71,13 @@ export function GameCanvas() {
       lastTime = now
       const store = useGameStore.getState()
 
-      // paused: freeze the frame exactly as it is, do nothing else
-      if (store.paused) return
+      // paused: freeze the frame exactly as it is; silence the hole's rumble
+      if (store.paused) {
+        audioEngine.setRumble(0)
+        if (redrawWhilePaused && lastRender) renderFrame({ ...lastRender, stars })
+        redrawWhilePaused = false
+        return
+      }
 
       if (store.shipWorldX < world.prevWorldX - 1) resetWorldForRun(world)
       world.prevWorldX = store.shipWorldX
@@ -120,7 +131,8 @@ export function GameCanvas() {
       world.viewScale = frame.scale
       audioEngine.setRumble(frame.holeShake)
 
-      renderFrame({ ctx, frame, world, level, layout, store: latest, sprites, stars, time: world.simTime })
+      lastRender = { ctx, frame, world, level, layout, store: latest, sprites, stars, time: world.simTime }
+      renderFrame(lastRender)
     }
 
     animationFrame = requestAnimationFrame(loop)
@@ -128,6 +140,7 @@ export function GameCanvas() {
     return () => {
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(animationFrame)
+      audioEngine.setRumble(0)
     }
   }, [])
 

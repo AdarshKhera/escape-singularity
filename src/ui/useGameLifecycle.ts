@@ -26,9 +26,12 @@ export function useAutoPause(hold: boolean): void {
     }
     document.addEventListener('visibilitychange', onVisibility)
     window.addEventListener('pagehide', pauseIfRunning)
+    // a notification shade or alt-tab blurs without hiding the page
+    window.addEventListener('blur', pauseIfRunning)
     return () => {
       document.removeEventListener('visibilitychange', onVisibility)
       window.removeEventListener('pagehide', pauseIfRunning)
+      window.removeEventListener('blur', pauseIfRunning)
     }
   }, [])
 }
