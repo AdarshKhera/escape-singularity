@@ -1,4 +1,4 @@
-import { MAX_PULL, PULL_RANGE } from '../levels/worldConfig'
+import { MAX_PULL, PLANET_RADIUS, PULL_RANGE } from '../levels/worldConfig'
 
 // Lateral drag back toward the centreline.
 //
@@ -34,8 +34,22 @@ export const PLANET_INFLUENCE_RADII = 7
 // the field is full strength out to this many radii, then fades to the edge
 const PLANET_FADE_START_RADII = 3.5
 
+// Big worlds are harder to get away from: they pull harder at the surface and
+// their field reaches further out, in proportion to how much bigger than the
+// standard planet they are (smaller worlds are unaffected).
+const MASS_PER_EXTRA_SIZE = 0.45
+const REACH_RADII_PER_EXTRA_SIZE = 1.5
+
+function extraSize(radius: number): number {
+  return Math.max(radius / PLANET_RADIUS - 1, 0)
+}
+
+export function planetMassFactor(radius: number): number {
+  return 1 + MASS_PER_EXTRA_SIZE * extraSize(radius)
+}
+
 export function planetInfluenceRadius(radius: number, override?: number): number {
-  return override ?? radius * PLANET_INFLUENCE_RADII
+  return override ?? radius * (PLANET_INFLUENCE_RADII + REACH_RADII_PER_EXTRA_SIZE * extraSize(radius))
 }
 
 // Lateral acceleration on the ship from one planet. dx/dy are ship minus
@@ -50,7 +64,7 @@ export function computePlanetAccelY(
   const distance = Math.hypot(dx, dy)
   if (distance >= influence || distance < 1e-6) return 0
   const clamped = Math.max(distance, radius)
-  const magnitude = surfaceGravity * PLANET_G * (radius / clamped) ** 2
+  const magnitude = surfaceGravity * PLANET_G * planetMassFactor(radius) * (radius / clamped) ** 2
   const fadeStart = Math.min(radius * PLANET_FADE_START_RADII, influence * 0.9)
   const fade =
     distance <= fadeStart ? 1 : 1 - smoothstep((distance - fadeStart) / (influence - fadeStart))

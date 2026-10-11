@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { STEER_ACCEL } from '../levels/worldConfig'
+import { PLANET_RADIUS, STEER_ACCEL } from '../levels/worldConfig'
 import { LEVELS } from '../levels/levels'
 import {
   PLANET_G,
   computeBlackHolePull,
   computePlanetAccelY,
   planetInfluenceRadius,
+  planetMassFactor,
 } from './gravity'
 import { WELL_FIELD_RADIUS, computeWellAccelY, wellActivation } from './hazardFields'
 
@@ -39,6 +40,20 @@ describe('computePlanetAccelY', () => {
     expect(Math.abs(far)).toBeLessThan(Math.abs(near))
     expect(heavy).toBeCloseTo(near * 2)
     expect(Math.abs(near)).toBeCloseTo((PLANET_G * r * r) / (4 * r * r))
+  })
+
+  it('makes bigger worlds harder to escape: stronger pull and longer reach', () => {
+    const small = PLANET_RADIUS * 0.6
+    const big = PLANET_RADIUS * 2.4
+    expect(planetMassFactor(small)).toBe(1)
+    expect(planetMassFactor(PLANET_RADIUS)).toBe(1)
+    expect(planetMassFactor(big)).toBeGreaterThan(1.4)
+    // the same surface gravity, one radius off the surface, pulls harder on the bigger world
+    const pullAt = (r: number) => Math.abs(computePlanetAccelY(0, r * 2, 1, r))
+    expect(pullAt(big)).toBeGreaterThan(pullAt(PLANET_RADIUS) * planetMassFactor(big) * 0.99)
+    // and its field reaches further, in radii as well as in units
+    expect(planetInfluenceRadius(big) / big).toBeGreaterThan(planetInfluenceRadius(PLANET_RADIUS) / PLANET_RADIUS)
+    expect(planetInfluenceRadius(small) / small).toBe(planetInfluenceRadius(PLANET_RADIUS) / PLANET_RADIUS)
   })
 
   it('fades to exactly zero at the edge of influence', () => {
