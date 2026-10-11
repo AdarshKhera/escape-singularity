@@ -10,6 +10,7 @@ import { displayText, formatDuration, formatScore } from '../levelFormat'
 import { SHIPS, isShipUnlocked, nextShipToUnlock } from '../shipAdapter'
 import { shipThrustFrameSrc } from '../../render/shipSkins'
 import { Sheet } from './Sheet'
+import './records.css'
 
 type RecordsTab = 'overview' | 'levels' | 'awards'
 

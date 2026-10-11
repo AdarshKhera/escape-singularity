@@ -4,6 +4,7 @@ import { useProgressStore } from '../state/progressStore'
 import { totalStars } from '../state/starTotals'
 import { playUiSound } from './audioAdapter'
 import { LockIcon, StarGlyph } from './icons'
+import './hangar.css'
 import { SHIPS, STAT_KEYS, STAT_LABELS, STAT_MAX, getShip, isShipUnlocked, type ShipView } from './shipAdapter'
 
 interface ShipSelectorProps {
