@@ -46,7 +46,8 @@ export function renderParticles(
         ctx.strokeStyle = PARTICLE_FILLS[lastColor]
       }
       ctx.globalAlpha = glowPass ? t : Math.min(1, t * 1.6)
-      if (streaks) {
+      // only hot, glowing particles smear; smoke and rock keep their shape
+      if (streaks && glowPass) {
         // velocity relative to the moving camera, in screen px
         const vx = (p.vx[i] - frame.cameraVx) * frame.scale * STREAK_SECONDS
         const vy = p.vy[i] * frame.scale * STREAK_SECONDS
