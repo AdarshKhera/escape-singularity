@@ -1,10 +1,13 @@
-import {
-  FUEL_MAX,
-  THROTTLE_MAX_SPEED,
-  resolvePhase,
-} from '../../levels/worldConfig'
+import { FUEL_MAX, resolvePhase } from '../../levels/worldConfig'
 import { computeLevelSegments, type LevelDefinition } from '../../levels/levels'
-import { computeFuelDrainRate, laneBoundAt, stepShip, type ShipKinematics } from '../shipStep'
+import {
+  computeFuelDrainRate,
+  laneBoundAt,
+  shipMaxSpeed,
+  stepShip,
+  type ShipKinematics,
+} from '../shipStep'
+import { NEUTRAL_TUNING, type ShipTuning } from '../shipTuning'
 
 // Headless flight through one black hole passage, driven by a simple
 // autopilot but using the exact flight model the game runs (stepShip, its
@@ -25,6 +28,8 @@ export interface PassPolicy {
    * more fuel than the efficient line; every level must still allow it.
    */
   sloppy?: boolean
+  /** the ship flown; defaults to the Scout's neutral tuning */
+  tuning?: ShipTuning
 }
 
 export interface PassResult {
@@ -69,7 +74,7 @@ export function simulateHolePass(
     worldX: layout.fuelCacheX,
     lateral: 0,
     lateralVelocity: 0,
-    forwardSpeed: THROTTLE_MAX_SPEED,
+    forwardSpeed: shipMaxSpeed(policy.tuning),
   }
   let fuel = startFuel
   let ranDry = false
@@ -93,7 +98,7 @@ export function simulateHolePass(
       boosting: false,
       pickupBoosting: false,
     } as const
-    const env = { level, layout, phase, time: t }
+    const env = { level, layout, phase, time: t, tuning: policy.tuning ?? NEUTRAL_TUNING }
     const drain = computeFuelDrainRate(controls, env, ship)
     if (drain > 0 && fuel > 0) fuel = Math.max(0, fuel - drain * SIM_DT)
     if (fuel <= 0) ranDry = true

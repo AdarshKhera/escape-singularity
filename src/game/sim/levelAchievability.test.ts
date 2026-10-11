@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { LEVELS, computeLevelSegments, type LevelDefinition } from '../../levels/levels'
 import { simulateHolePass } from './simulateHolePass'
+import { shipTuningFor } from '../shipTuning'
+import { SHIP_SKINS } from '../../render/shipSkins'
 
 // The difficulty contract, checked against the real flight model:
 //  - every hole on every level can be escaped above AND below, by an
@@ -63,5 +65,33 @@ describe('difficulty curve', () => {
         ),
       )
     expect(spare(LEVELS[0])).toBeGreaterThan(spare(LEVELS[LEVELS.length - 1]) * 2)
+  })
+})
+
+// Every ship, not just the Scout, has to be able to finish every level. The
+// weakest ship on each axis matters most (Titan and Vanguard on thrust, Halo,
+// Nova and Titan on handling, Lancer and Viper on fuel), so every ship in
+// the hangar flies every hole both ways, sloppily too.
+const OTHER_SHIPS = SHIP_SKINS.filter((s) => s.id !== 'scout').map((s) => s.id)
+
+describe.each(OTHER_SHIPS)('flown in the %s', (shipId) => {
+  const tuning = shipTuningFor(shipId)
+
+  it.each(LEVELS.map((level) => [level.id, level] as const))('level %i stays escapable', (_id, level) => {
+    computeLevelSegments(level).forEach((_, segment) => {
+      for (const side of [-1, 1] as const) {
+        let latest = -Infinity
+        for (let c = -1400; c <= 6000; c += COMMIT_STEP) {
+          if (simulateHolePass(level, segment, { side, commitOffset: c, tuning }).survived) latest = c
+        }
+        expect(latest).toBeGreaterThan(-1000)
+        const commit = Math.min(0, latest - 400)
+        const efficient = simulateHolePass(level, segment, { side, commitOffset: commit, tuning })
+        const sloppy = simulateHolePass(level, segment, { side, commitOffset: commit, sloppy: true, tuning })
+        expect(efficient.survived).toBe(true)
+        expect(sloppy.survived).toBe(true)
+        expect(efficient.ranDry).toBe(false)
+      }
+    })
   })
 })

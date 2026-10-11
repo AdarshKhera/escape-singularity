@@ -18,10 +18,10 @@ import { resolveObstacleCollisions } from './collisionSystem'
 import { handleFireRequest, stepProjectiles } from './combatSystem'
 import { updateHazards } from './hazardSystem'
 import { SLINGSHOT_SPEED, updatePlanets } from './planetSystem'
-import { INVULNERABLE_SECONDS } from './damage'
 import { computeSkimBonus } from './scoring'
 import { onBoost, onEscape, onFuelCache, showEventBanner } from './gameEvents'
 import { emitThrusters } from './thrusters'
+import { shipTuningFor } from './shipTuning'
 
 // the approach warning fires this far ahead of the pull window opening
 const EARLY_WARNING_LEAD = 2600
@@ -164,7 +164,7 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
     pickupBoosting: world.pickupBoostTimer > 0,
     extraSpeed: world.slingshotTimer > 0 ? SLINGSHOT_SPEED : 0,
   }
-  const env = { level, layout, phase, time }
+  const env = { level, layout, phase, time, tuning: shipTuningFor(store.shipSkinId) }
   const drainRate = computeFuelDrainRate(controls, env, ship)
   if (drainRate > 0 && store.fuel > 0) store.drainFuel(drainRate * dt)
 
@@ -199,7 +199,8 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
 export function updateSuckedIn(world: GameWorld, dt: number): void {
   world.suckInElapsed += dt
   if (world.suckInElapsed >= SUCK_IN_SECONDS) {
-    useGameStore.getState().loseLife('blackhole')
-    world.invulnerableTimer = INVULNERABLE_SECONDS
+    const store = useGameStore.getState()
+    store.loseLife('blackhole')
+    world.invulnerableTimer = shipTuningFor(store.shipSkinId).invulnerableSeconds
   }
 }

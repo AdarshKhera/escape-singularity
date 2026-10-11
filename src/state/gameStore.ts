@@ -14,6 +14,7 @@ import {
   saveBestResults,
   type BestResults,
 } from '../game/bestResults'
+import { shipTuningFor } from '../game/shipTuning'
 
 export type { RunStats, StarReasons } from '../game/scoring'
 export type { BestResult, BestResults } from '../game/bestResults'
@@ -23,6 +24,19 @@ export type DeathCause = 'collision' | 'blackhole'
 
 /** Moments worth a vibration. The UI subscribes and calls navigator.vibrate. */
 export type HapticKind = 'hit' | 'explosion' | 'pickup' | 'boost' | 'death' | 'escape'
+
+/** The player action a tutorial prompt teaches; the UI maps it to a key or touch hint. */
+export type TutorialAction = 'steer' | 'thrust' | 'boost' | 'fire' | 'brake'
+
+/** A contextual coaching line for early levels; text is input-neutral. */
+export interface TutorialPrompt {
+  /** strictly increasing per prompt shown, so the UI can animate each one in */
+  id: number
+  /** input-neutral copy, e.g. "Steer early. The pull only grows." */
+  text: string
+  /** the action it teaches, or null for a plain tip */
+  action: TutorialAction | null
+}
 
 export interface HapticEvent {
   /** strictly increasing; a new id means a new event even if kind repeats */
@@ -100,6 +114,8 @@ interface GameState {
   livesAtLevelStart: number
   /** bumped on every haptic-worthy moment; see HapticKind */
   hapticEvent: HapticEvent
+  /** contextual tutorial prompt on levels 1-3; null when none is showing */
+  tutorialPrompt: TutorialPrompt | null
 
   requestFire: () => void
   addAmmo: (amount: number) => void
@@ -131,9 +147,13 @@ interface GameState {
   recordHorizonGap: (gap: number, holeRadius: number) => void
   /** game-time clock for the attempt, pushed at a low rate from the loop */
   setRunTime: (timeMs: number) => void
+  /** show a tutorial prompt (a fresh id is assigned), or clear it with null */
+  setTutorialPrompt: (prompt: Omit<TutorialPrompt, 'id'> | null) => void
 }
 
 const INITIAL_LIVES = 3
+// tutorial prompt ids keep climbing across clears, so a repeat is still new
+let tutorialSequence = 0
 
 // Fresh-attempt fields shared by every action that (re)starts flight.
 function freshFlight() {
@@ -152,17 +172,19 @@ function freshFlight() {
     paused: false,
     runStats: createRunStats(),
     levelResult: null,
+    tutorialPrompt: null,
   }
 }
 
-// A fresh level: full tank, empty loadout.
-function freshLevel() {
+// A fresh level: full tank, empty loadout, except heavy hulls (armour 4+)
+// which are fitted with a shield charge at the start of every level.
+function freshLevel(shipSkinId: string) {
   return {
     ...freshFlight(),
     fuel: FUEL_MAX,
     hasWeapon: false,
     ammo: 0,
-    shieldCharges: 0,
+    shieldCharges: shipTuningFor(shipSkinId).startShield ? 1 : 0,
   }
 }
 
@@ -178,7 +200,7 @@ function addStats(stats: RunStats, delta: RunStatsDelta): RunStats {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
-  ...freshLevel(),
+  ...freshLevel('scout'),
   bankInput: 0,
   throttleInput: 0,
   boostRequestId: 0,
@@ -204,10 +226,15 @@ export const useGameStore = create<GameState>((set, get) => ({
   setShipSkinId: (shipSkinId) => set({ shipSkinId }),
 
   setLevel: (level) =>
-    set((s) => ({ ...freshLevel(), level, totalScore: 0, livesAtLevelStart: s.lives })),
+    set((s) => ({
+      ...freshLevel(s.shipSkinId),
+      level,
+      totalScore: 0,
+      livesAtLevelStart: s.lives,
+    })),
 
   advanceLevel: () =>
-    set((s) => ({ ...freshLevel(), level: s.level + 1, livesAtLevelStart: s.lives })),
+    set((s) => ({ ...freshLevel(s.shipSkinId), level: s.level + 1, livesAtLevelStart: s.lives })),
 
   setBankInput: (bankInput) => set({ bankInput }),
   setThrottleInput: (throttleInput) => set({ throttleInput }),
@@ -285,16 +312,22 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   // restart from the beginning of the level, keeping lives lost and the
   // loadout; the tank refills since the run (and its fuel cache) rewinds too
-  respawn: () => set({ ...freshFlight(), fuel: FUEL_MAX }),
+  // the toughest hulls (armour 5) are refitted with a shield on every respawn
+  respawn: () =>
+    set((s) => ({
+      ...freshFlight(),
+      fuel: FUEL_MAX,
+      shieldCharges: shipTuningFor(s.shipSkinId).respawnShield ? 1 : s.shieldCharges,
+    })),
 
   resetRun: () =>
-    set({
-      ...freshLevel(),
+    set((s) => ({
+      ...freshLevel(s.shipSkinId),
       lives: INITIAL_LIVES,
       level: 1,
       totalScore: 0,
       livesAtLevelStart: INITIAL_LIVES,
-    }),
+    })),
 
   emitHaptic: (kind) => set((s) => ({ hapticEvent: { id: s.hapticEvent.id + 1, kind } })),
 
@@ -317,4 +350,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setRunTime: (timeMs) => set((s) => ({ runStats: { ...s.runStats, timeMs } })),
+
+  setTutorialPrompt: (prompt) => {
+    if (prompt) tutorialSequence += 1
+    set({ tutorialPrompt: prompt ? { ...prompt, id: tutorialSequence } : null })
+  },
 }))

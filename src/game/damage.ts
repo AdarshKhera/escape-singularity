@@ -1,8 +1,7 @@
 import { useGameStore } from '../state/gameStore'
 import { onShipHit } from './gameEvents'
+import { shipTuningFor } from './shipTuning'
 import type { GameWorld } from './world'
-
-export const INVULNERABLE_SECONDS = 1.4
 
 // Anything solid touching the hull: a held shield absorbs it for free,
 // otherwise a life is lost. Returns false while invulnerable (no effect).
@@ -16,7 +15,8 @@ export function damageShip(world: GameWorld, shipWorldX: number, lateral: number
   } else {
     store.loseLife('collision')
   }
-  world.invulnerableTimer = INVULNERABLE_SECONDS
-  onShipHit(world, shipWorldX, lateral, shielded)
+  const tuning = shipTuningFor(store.shipSkinId)
+  world.invulnerableTimer = tuning.invulnerableSeconds
+  onShipHit(world, shipWorldX, lateral, shielded, tuning.hitFeedback)
   return true
 }

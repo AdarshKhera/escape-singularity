@@ -110,12 +110,13 @@ export function onFire(world: GameWorld, x: number, y: number): void {
   audioEngine.playSfx('fire')
 }
 
-export function onShipHit(world: GameWorld, x: number, y: number, shieldAbsorbed: boolean): void {
+// severity: the ship's hitFeedback (armour), 1 for the Scout
+export function onShipHit(world: GameWorld, x: number, y: number, shieldAbsorbed: boolean, severity = 1): void {
   world.particles.burst(x, y, 26, px(world, 520), 0.5, 3, shieldAbsorbed ? PC.ice : PC.spark)
   world.particles.burst(x, y, 10, px(world, 260), 1, 3.6, PC.rock, false)
-  addTrauma(world.feedback, shieldAbsorbed ? 0.45 : 0.7)
-  triggerHitStop(world.feedback, shieldAbsorbed ? 0.06 : 0.1)
-  triggerFlash(world.feedback, shieldAbsorbed ? 0.35 : 0.5, shieldAbsorbed ? '150,210,255' : '255,60,50')
+  addTrauma(world.feedback, (shieldAbsorbed ? 0.45 : 0.7) * severity)
+  triggerHitStop(world.feedback, (shieldAbsorbed ? 0.06 : 0.1) * severity)
+  triggerFlash(world.feedback, (shieldAbsorbed ? 0.35 : 0.5) * severity, shieldAbsorbed ? '150,210,255' : '255,60,50')
   audioEngine.playSfx(shieldAbsorbed ? 'shieldBreak' : 'hit')
   if (shieldAbsorbed) {
     addPopup(world, 'SHIELD DOWN', x, y - px(world, 30), POPUP_RGB.info)
