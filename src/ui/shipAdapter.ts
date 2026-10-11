@@ -1,4 +1,5 @@
 import { SHIP_SKINS, type ShipSkin } from '../render/shipSkins'
+import { displayText } from './levelFormat'
 
 // UI view of the ship roster. Progression fields (stats, role, unlockStars)
 // come from the skin data when present; until then the agreed thresholds and
@@ -70,7 +71,7 @@ function readUnlockStars(raw: unknown, id: string): number {
 }
 
 function readRole(raw: unknown): string {
-  return typeof raw === 'string' && raw.trim() ? raw.trim() : FALLBACK_ROLE
+  return typeof raw === 'string' && raw.trim() ? displayText(raw.trim()) : FALLBACK_ROLE
 }
 
 export function toShipView(skin: ShipSkin): ShipView {

@@ -7,6 +7,7 @@ import { useCoachStore } from './coachStore'
 import { coachHint, tipKey } from './coachHints'
 import { useTutorialPrompt } from './gameStoreAdapters'
 import { useLevelIntroStore } from './levelIntroStore'
+import { displayText } from './levelFormat'
 import { useActionDetector } from './useActionDetector'
 
 // In-flight coach mark for the game's tutorial prompts. Shows the prompt with
@@ -66,7 +67,7 @@ export function CoachMark({ inputMode }: { inputMode: InputMode }) {
 
   return (
     <div key={prompt.id} className={`es-coach${done ? ' es-coach--done' : ''}`} role="status" aria-live="polite">
-      <span className="es-coach__text">{prompt.text}</span>
+      <span className="es-coach__text">{displayText(prompt.text)}</span>
       {done ? (
         <span className="es-coach__hint es-coach__hint--done">
           <CheckIcon />
