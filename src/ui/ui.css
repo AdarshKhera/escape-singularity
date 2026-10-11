@@ -665,10 +665,11 @@
   animation: es-stage-in 420ms ease-out both;
 }
 
+/* opacity only: a filter here would re-filter the full-screen game canvas
+   every frame of the fade, which phones pay for in dropped frames */
 @keyframes es-stage-in {
   from {
     opacity: 0;
-    filter: brightness(1.8) blur(2px);
   }
 }
 

@@ -8,7 +8,8 @@ import { useLevelIntroStore } from './levelIntroStore'
 // Brief title card as a level starts: number, name, subtitle and the black
 // hole waiting at the end. Sits low and centred, clear of the ship's lane,
 // and is gone in a little over two seconds. Never blocks input.
-const INTRO_MS = 2400
+// card animation (2400ms) plus the 400ms it waits for the stage fade
+const INTRO_MS = 2800
 
 export function LevelIntro() {
   const introId = useLevelIntroStore((s) => s.introId)

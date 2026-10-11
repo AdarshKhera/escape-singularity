@@ -257,7 +257,8 @@
   -webkit-backdrop-filter: blur(4px);
   pointer-events: none;
   transform: translateX(-50%);
-  animation: es-intro 2400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* waits out the menu-to-game fade so the card is seen in full */
+  animation: es-intro 2400ms cubic-bezier(0.2, 0.8, 0.2, 1) 400ms both;
 }
 
 .es-intro--static {
