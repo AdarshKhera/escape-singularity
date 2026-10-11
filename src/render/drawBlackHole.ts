@@ -41,8 +41,9 @@ export function drawBlackHole(
 ) {
   if (radius <= 0.5) return
   const sharp = Math.min(Math.max(focus, 0), 1)
-  // a distant hole is a faint backdrop (about a quarter strength), full when in focus
-  const strength = 0.26 + 0.74 * sharp
+  // a distant hole is a faint backdrop (about a seventh strength), easing up slowly and
+  // only reaching full strength as it truly looms
+  const strength = 0.14 + 0.86 * sharp * sharp * sharp
   const diskStrength = disk * strength
 
   const pulse = 0.85 + 0.15 * Math.sin(time * 0.7)

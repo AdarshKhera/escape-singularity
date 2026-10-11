@@ -48,14 +48,17 @@ function labelOpacity(input: RenderInputs, hole: HoleScreen, revealT: number): n
   const labelY = hole.y - hole.radius - 34
   const shipY = toScreenY(frame, store.shipLateral)
   const near = Math.abs(frame.shipScreenX - hole.x) < 260 ? Math.abs(shipY - labelY) / 70 : 1
-  return Math.min(revealT, 1) * Math.min(Math.max(near, 0.15), 1)
+  // and out of the way of the centred status banner ("BLACK HOLE APPROACHING")
+  const clash = Math.abs(labelY - frame.height * 0.24) / 56
+  return Math.min(revealT, 1) * Math.min(Math.max(near, 0.15), 1) * Math.min(Math.max(clash, 0.1), 1)
 }
 
 function renderHole(input: RenderInputs, hole: HoleScreen, opacity: number, revealT: number): void {
   const { ctx, layout, time, world } = input
   if (opacity <= 0.01) return
   ctx.save()
-  ctx.globalAlpha = opacity
+  // a little dimmer again while it is still distant
+  ctx.globalAlpha = opacity * (0.7 + 0.3 * hole.focus)
   drawBlackHole(ctx, {
     x: hole.x,
     y: hole.y,

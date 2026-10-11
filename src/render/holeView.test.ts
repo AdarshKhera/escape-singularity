@@ -54,4 +54,12 @@ describe('hole palettes', () => {
     expect(used.size).toBeGreaterThanOrEqual(4)
     expect(HOLE_PALETTES.every((p) => p.hot[0] >= p.cool[0] - 80)).toBe(true)
   })
+
+  it('never gives two holes in a row the same tone', () => {
+    const order = LEVELS.flatMap((l) => computeLevelSegments(l).map((s) => s.holeName))
+    for (let i = 1; i < order.length; i++) {
+      if (order[i] === order[i - 1]) continue // the same hole (Sol) keeps its colour
+      expect(paletteForHole(order[i]).id).not.toBe(paletteForHole(order[i - 1]).id)
+    }
+  })
 })

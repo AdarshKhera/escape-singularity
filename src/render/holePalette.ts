@@ -41,7 +41,30 @@ function hashName(name: string): number {
   return h >>> 0
 }
 
+// Assigned by hand so neighbouring levels never share a tone ("Sol" is gold on
+// purpose: it is what the Sun became). Unknown names fall back to a hash.
+const ASSIGNED: Readonly<Record<string, string>> = {
+  Cradlefall: 'ember',
+  'The Tithe': 'gold',
+  'Ashfall Dark': 'rose',
+  Sol: 'gold',
+  'Cygnus Null': 'ice',
+  Velatine: 'violet',
+  'The Rimward Dark': 'ember',
+  "The Rim's End": 'violet',
+  'The Fault': 'rose',
+  'The Deeper Fault': 'teal',
+  'The Maw': 'ice',
+  "The Maw's Throat": 'gold',
+  'The Drifter': 'violet',
+  'The Drifter Prime': 'ember',
+  'The Outer Horizon': 'rose',
+  'The Middle Horizon': 'ice',
+  'The Singularity': 'teal',
+}
+
 /** Stable per hole: the same name always burns the same colour. */
 export function paletteForHole(name: string): HolePalette {
-  return HOLE_PALETTES[hashName(name) % HOLE_PALETTES.length]
+  const assigned = HOLE_PALETTES.find((p) => p.id === ASSIGNED[name])
+  return assigned ?? HOLE_PALETTES[hashName(name) % HOLE_PALETTES.length]
 }
