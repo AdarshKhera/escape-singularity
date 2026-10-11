@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Button } from '../primitives'
+import { playUiSound } from '../audioAdapter'
 
 interface SheetProps {
   title: string
@@ -13,7 +14,9 @@ interface SheetProps {
 export function Sheet({ title, onBack, aside, children }: SheetProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Backspace') onBack()
+      if (e.key !== 'Escape' && e.key !== 'Backspace') return
+      playUiSound('back')
+      onBack()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
