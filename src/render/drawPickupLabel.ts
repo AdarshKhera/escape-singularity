@@ -1,3 +1,5 @@
+import { FONT_DISPLAY } from '../ui/fonts'
+
 // A tiny caption under a world pickup, naming what it is — the entities
 // themselves are labelled, not the HUD.
 export function drawPickupLabel(
@@ -11,8 +13,9 @@ export function drawPickupLabel(
   ctx.save()
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.font = '600 8px monospace'
-  ctx.fillStyle = 'rgba(232,236,245,0.65)'
+  ctx.font = `500 9px ${FONT_DISPLAY}`
+  ctx.letterSpacing = '1.5px'
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'
   ctx.fillText(text, x, y + belowOffset)
   ctx.restore()
 }

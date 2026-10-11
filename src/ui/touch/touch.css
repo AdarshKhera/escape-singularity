@@ -233,8 +233,8 @@
   position: absolute;
   inset: -6px;
   border-radius: inherit;
-  border: 2px solid var(--es-gold);
-  box-shadow: 0 0 18px rgba(255, 211, 107, 0.55);
+  border: 2px solid #fff;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.5);
   pointer-events: none;
   animation: es-coach-pulse 1.2s ease-out infinite;
 }

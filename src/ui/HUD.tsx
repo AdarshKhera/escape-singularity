@@ -3,11 +3,10 @@ import { FUEL_MAX } from '../levels/worldConfig'
 import { getLevel, computeLevelSegments } from '../levels/levels'
 import { PixelHeart } from './PixelHeart'
 import { displayText, levelName } from './levelFormat'
-import { gaugeCells, horizonProgress } from './hudMath'
+import { horizonProgress } from './hudMath'
 import './hud.css'
 
 const MAX_LIVES = 3
-const FUEL_CELLS = 14
 
 interface HUDProps {
   touchMode: boolean
@@ -31,7 +30,6 @@ export function HUD({ touchMode }: HUDProps) {
 
   const progress = horizonProgress(computeLevelSegments(getLevel(level)), shipWorldX)
   const fuelFraction = Math.max(0, Math.min(1, fuel / FUEL_MAX))
-  const litCells = gaugeCells(fuelFraction, FUEL_CELLS)
   const lowFuel = fuelFraction < 0.25
   const live = status === 'playing' && !paused
 
@@ -47,7 +45,7 @@ export function HUD({ touchMode }: HUDProps) {
 
         <div className="es-hud__hearts" aria-label={`${lives} lives`}>
           {Array.from({ length: MAX_LIVES }, (_, i) => (
-            <PixelHeart key={i} filled={i < lives} size={12} />
+            <PixelHeart key={i} filled={i < lives} size={13} />
           ))}
         </div>
 
@@ -60,10 +58,8 @@ export function HUD({ touchMode }: HUDProps) {
           aria-valuenow={Math.round(fuelFraction * 100)}
         >
           <span className="es-hud__fuel-label">Fuel</span>
-          <span className="es-hud__cells" aria-hidden="true">
-            {Array.from({ length: FUEL_CELLS }, (_, i) => (
-              <i key={i} className={i < litCells ? 'is-on' : undefined} />
-            ))}
+          <span className="es-hud__bar" aria-hidden="true">
+            <i style={{ width: `${fuelFraction * 100}%` }} />
           </span>
         </div>
 

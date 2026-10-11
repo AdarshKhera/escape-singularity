@@ -30,7 +30,6 @@ export function LevelIntro() {
 
   return (
     <div key={introId} className={`es-intro${reduced ? ' es-intro--static' : ''}`} role="status">
-      <span className="es-intro__hole" aria-hidden="true" />
       <div className="es-intro__text">
         <span className="es-intro__num">Level {String(def.id).padStart(2, '0')}</span>
         <span className="es-intro__name">{displayText(def.name)}</span>

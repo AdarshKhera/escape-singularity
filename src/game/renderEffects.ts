@@ -1,3 +1,4 @@
+import { FONT_DISPLAY } from '../ui/fonts'
 import type { LevelDefinition } from '../levels/levels'
 import { WELL_CORE_RADIUS, WELL_FIELD_RADIUS, ionCloudContains, wellActivation } from '../physics/hazardFields'
 import { drawGravityWell } from '../render/drawGravityWell'
@@ -115,7 +116,7 @@ function drawFlare(ctx: CanvasRenderingContext2D, x: number, y: number, r: numbe
 export function renderPopups(ctx: CanvasRenderingContext2D, frame: CameraFrame, world: GameWorld): void {
   if (world.popups.length === 0) return
   ctx.save()
-  ctx.font = "700 12px 'JetBrains Mono', ui-monospace, monospace"
+  ctx.font = `500 13px ${FONT_DISPLAY}`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   for (const popup of world.popups) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LEVELS, computeLevelSegments } from '../levels/levels'
-import { gaugeCells, horizonProgress } from './hudMath'
+import { horizonProgress } from './hudMath'
 
 describe('horizonProgress', () => {
   const single = computeLevelSegments(LEVELS[0])
@@ -30,16 +30,5 @@ describe('horizonProgress', () => {
     const p = horizonProgress(multi, end + 5000)
     expect(p.fraction).toBeGreaterThanOrEqual(0)
     expect(p.fraction).toBeLessThanOrEqual(1)
-  })
-})
-
-describe('gaugeCells', () => {
-  it('rounds, clamps, and never shows an empty gauge while fuel remains', () => {
-    expect(gaugeCells(1, 12)).toBe(12)
-    expect(gaugeCells(0.5, 12)).toBe(6)
-    expect(gaugeCells(0.001, 12)).toBe(1)
-    expect(gaugeCells(0, 12)).toBe(0)
-    expect(gaugeCells(5, 12)).toBe(12)
-    expect(gaugeCells(-1, 12)).toBe(0)
   })
 })

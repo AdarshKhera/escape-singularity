@@ -3,7 +3,7 @@ interface PixelHeartProps {
   size?: number
 }
 
-// A clean vector heart: neon rose when it is a life you still have, a faint
+// A clean vector heart: solid white when it is a life you still have, a faint
 // outline when it is spent. (Kept under its original name so callers don't
 // change; it is no longer pixel art.)
 const HEART_PATH =
@@ -16,12 +16,12 @@ export function PixelHeart({ filled, size = 16 }: PixelHeartProps) {
       height={size}
       viewBox="0 0 24 24"
       aria-hidden="true"
-      style={filled ? { filter: 'drop-shadow(0 0 4px rgba(255, 92, 140, 0.55))' } : undefined}
+      style={filled ? { filter: 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.45))' } : undefined}
     >
       <path
         d={HEART_PATH}
-        fill={filled ? '#ff5c8c' : 'transparent'}
-        stroke={filled ? '#ffa3bd' : 'rgba(231, 233, 238, 0.28)'}
+        fill={filled ? '#ffffff' : 'transparent'}
+        stroke={filled ? '#ffffff' : 'rgba(255, 255, 255, 0.3)'}
         strokeWidth={1.6}
         strokeLinejoin="round"
       />

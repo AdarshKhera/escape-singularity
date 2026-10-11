@@ -26,10 +26,3 @@ export function horizonProgress(segments: readonly HoleSegment[], shipWorldX: nu
     holeCount: segments.length,
   }
 }
-
-/** Filled cells of a segmented gauge: any fuel at all shows at least one. */
-export function gaugeCells(fraction: number, cells: number): number {
-  const clamped = Math.min(Math.max(fraction, 0), 1)
-  if (clamped <= 0) return 0
-  return Math.max(1, Math.round(clamped * cells))
-}

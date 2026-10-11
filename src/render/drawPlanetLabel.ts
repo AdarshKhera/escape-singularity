@@ -1,3 +1,4 @@
+import { FONT_DISPLAY } from '../ui/fonts'
 import type { PlanetDefinition } from '../levels/planets'
 
 // Small technical readout beside a planet as the ship passes it — deliberately
@@ -29,19 +30,22 @@ export function drawPlanetLabel(
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
 
-  ctx.fillStyle = 'rgba(232,236,245,0.92)'
-  ctx.font = '600 12px monospace'
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
+  ctx.font = `500 12px ${FONT_DISPLAY}`
+  ctx.letterSpacing = '2.5px'
   ctx.fillText(planet.name.toUpperCase(), anchorX, anchorY - 14)
 
-  ctx.fillStyle = 'rgba(61, 232, 255,0.75)'
-  ctx.font = '9px monospace'
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'
+  ctx.letterSpacing = '0.5px'
+  ctx.font = `400 10px ${FONT_DISPLAY}`
   ctx.fillText(planet.designation, anchorX, anchorY - 1)
 
-  ctx.fillStyle = 'rgba(222, 227, 235,0.6)'
-  ctx.font = '9px monospace'
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'
+  ctx.font = `400 10px ${FONT_DISPLAY}`
   ctx.fillText(`GRAVITY ${planet.gravity}`, anchorX, anchorY + 11)
   ctx.fillText(planet.note, anchorX, anchorY + 23)
 
+  ctx.letterSpacing = '0px'
   ctx.restore()
   ctx.globalAlpha = 1
 }
