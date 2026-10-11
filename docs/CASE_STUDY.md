@@ -88,7 +88,14 @@ Each level also teaches its new idea gently: a short banner when it first appear
 
 ## Look and feel
 
-The first interface was blue-black and retro. I moved it to graphite grays with a single neon cyan accent, one clean display face, and a HUD that stays out of the way: the level number, your lives, a fuel gauge, and a slim track showing how far you are from the next hole. Everything that needs more room (ships, records, settings) lives in menus instead of on screen during play.
+The interface had three passes. The first was blue-black and retro. The second was graphite grays with a neon cyan accent, which was cleaner but still looked like a game jam entry. For the third I used slowroads.io as the reference for how calm a game interface can be: frosted glass instead of boxes, small wide-spaced capital letters for labels, thin numerals, and one colour. I kept what I loved about the old HUD, the progress line to the next hole and the row of hearts, and changed everything about how they look.
+
+![The HUD before and after](screens/hud-before.jpg)
+![The HUD after](screens/hud-after.jpg)
+
+The HUD is still only four things: the level number and name, your lives, a fuel bar, and a slim track showing how far you are from the next hole. Rockets and shield show up only while you hold them. The labels drawn on the game itself (planets, the black hole's name, pickups) use the same type, so nothing looks pasted on. Anything that needs more room (ships, records, settings) lives in menus instead of on screen during play.
+
+The menus have not had this pass yet. They still carry the older graphite and cyan look, and the same treatment is next.
 
 ![The home screen](screens/02-home.jpg)
 ![The hangar](screens/04-hangar.jpg)
