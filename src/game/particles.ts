@@ -32,8 +32,7 @@ export const PC = {
   smoke: 10,
 } as const
 
-export const PARTICLE_CAPACITY = 900
-const CAPACITY = PARTICLE_CAPACITY
+const CAPACITY = 900
 
 export class ParticlePool {
   readonly x = new Float32Array(CAPACITY)

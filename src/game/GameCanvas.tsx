@@ -115,7 +115,8 @@ export function GameCanvas() {
       adaptQuality(frameMs)
 
       // the run rewound: a respawn, a retry or a new level
-      if (store.shipWorldX < world.prevWorldX - 1) {
+      const rewound = store.shipWorldX < world.prevWorldX - 1
+      if (rewound) {
         resetWorldForRun(world)
         beginAttempt(world.visuals, store.level)
       }
@@ -161,7 +162,8 @@ export function GameCanvas() {
         computeMusicTension(latest.status, latest.shipWorldX, latest.shipLateral, layout),
       )
       if (latest.status !== 'playing' && world.tutorial.active) clearTutorialPrompt(world.tutorial)
-      const travelled = latest.shipWorldX - store.shipWorldX
+      // a rewind is a cut, not travel: no parallax lurch, no velocity spike
+      const travelled = rewound ? 0 : latest.shipWorldX - store.shipWorldX
       if (dt > 0) frame.cameraVx = travelled / dt
       updateCameraFrame(
         frame,

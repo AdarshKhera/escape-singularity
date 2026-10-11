@@ -105,14 +105,18 @@ function paintNebula(palette: NebulaPalette): HTMLCanvasElement | null {
   return canvas
 }
 
-function nebulaFor(level: number, palette: NebulaPalette): HTMLCanvasElement | null {
-  if (!cache.has(level)) cache.set(level, paintNebula(palette))
-  return cache.get(level) ?? null
-}
+// each tile is ~2 MB of pixels; only the current and previous level stay
+const MAX_CACHED = 2
 
-/** Paint a level's nebula ahead of time so the first frame doesn't hitch. */
-export function prepareNebula(level: number, palette: NebulaPalette): void {
-  nebulaFor(level, palette)
+function nebulaFor(level: number, palette: NebulaPalette): HTMLCanvasElement | null {
+  if (!cache.has(level)) {
+    if (cache.size >= MAX_CACHED) {
+      const oldest = cache.keys().next().value
+      if (oldest !== undefined) cache.delete(oldest)
+    }
+    cache.set(level, paintNebula(palette))
+  }
+  return cache.get(level) ?? null
 }
 
 export function drawNebula(
