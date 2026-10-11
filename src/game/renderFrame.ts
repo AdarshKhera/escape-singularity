@@ -5,6 +5,7 @@ import { drawBlackHole } from '../render/drawBlackHole'
 import { drawBlackHoleLabel } from '../render/drawBlackHoleLabel'
 import { drawSpeedLines } from '../render/drawSpeedLines'
 import { computeHoleView } from '../render/holeView'
+import { paletteForHole } from '../render/holePalette'
 import type { Star } from '../render/drawStarfield'
 import type { Sprites } from '../render/loadSprites'
 import { toScreenY, type CameraFrame } from './camera'
@@ -62,6 +63,8 @@ function renderHole(input: RenderInputs, hole: HoleScreen, opacity: number, reve
     time,
     disk: 1,
     streams: qualitySettings(world.quality).matterStreams,
+    palette: paletteForHole(layout.holeName),
+    focus: hole.focus,
   })
   drawBlackHoleLabel(
     ctx,
@@ -93,9 +96,9 @@ export function renderFrame(input: RenderInputs): void {
     },
     layout,
   )
-  const hole: HoleScreen = { x: view.x, y: view.y, radius: view.radius }
+  const hole: HoleScreen = { x: view.x, y: view.y, radius: view.radius, focus: view.focus }
   // lensing and darkness follow the hole in as it fades into view
-  const faded: HoleScreen = { x: view.x, y: view.y, radius: view.radius * view.opacity }
+  const faded: HoleScreen = { x: view.x, y: view.y, radius: view.radius * view.opacity, focus: view.focus }
 
   renderBackground(ctx, frame, world, store, layout, stars, faded, revealT, time)
 

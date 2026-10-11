@@ -1,5 +1,6 @@
 import { cachedGradient } from './gradientCache'
 import { drawDiskBack, drawDiskFront, drawLensedArcs, drawMatterStreams } from './accretionDisk'
+import { EMBER, rgba, type HolePalette } from './holePalette'
 
 interface DrawBlackHoleOptions {
   x: number
@@ -10,7 +11,18 @@ interface DrawBlackHoleOptions {
   disk?: number
   /** how many infalling matter streams to draw with the disk */
   streams?: number
+  /** the hole's own colour; defaults to ember */
+  palette?: HolePalette
+  /**
+   * 0..1 how sharply the hole is drawn. Far away it is dimmed and softened so
+   * it sits quietly in the background; it comes into focus as it looms.
+   */
+  focus?: number
 }
+
+// the largest horizon (px) worth softening with a blur filter
+const BLUR_MAX_RADIUS = 260
+const FAR_BLUR_PX = 2.2
 
 const TAU = Math.PI * 2
 
@@ -25,13 +37,20 @@ const TAU = Math.PI * 2
 // gradients are built once and reused every frame.
 export function drawBlackHole(
   ctx: CanvasRenderingContext2D,
-  { x, y, radius, time, disk = 0, streams = 0 }: DrawBlackHoleOptions,
+  { x, y, radius, time, disk = 0, streams = 0, palette = EMBER, focus = 1 }: DrawBlackHoleOptions,
 ) {
   if (radius <= 0.5) return
+  const sharp = Math.min(Math.max(focus, 0), 1)
+  const strength = 0.4 + 0.6 * sharp
+  const diskStrength = disk * strength
 
   const pulse = 0.85 + 0.15 * Math.sin(time * 0.7)
 
   ctx.save()
+  // a soft focus while distant (browsers without canvas filters just skip it)
+  if (sharp < 0.97 && radius < BLUR_MAX_RADIUS && 'filter' in ctx) {
+    ctx.filter = `blur(${((1 - sharp) * FAR_BLUR_PX).toFixed(2)}px)`
+  }
   ctx.translate(x, y)
   ctx.scale(radius, radius)
 
@@ -46,18 +65,19 @@ export function drawBlackHole(
     g.addColorStop(1, 'rgba(120, 130, 160, 0)')
     return g
   })
+  ctx.globalAlpha = strength
   ctx.beginPath()
   ctx.arc(0, 0, 1.34, 0, TAU)
   ctx.fill()
   ctx.restore()
 
-  if (disk > 0.01) {
-    drawLensedArcs(ctx, disk * (0.85 + 0.15 * Math.sin(time * 1.3)))
-    drawDiskBack(ctx, time, disk)
+  if (diskStrength > 0.01) {
+    drawLensedArcs(ctx, diskStrength * (0.85 + 0.15 * Math.sin(time * 1.3)), palette)
+    drawDiskBack(ctx, time, diskStrength, palette)
   }
 
   // lensed starlight is brightest where it wraps the limbs
-  ctx.globalAlpha = pulse * (1 - disk * 0.75)
+  ctx.globalAlpha = pulse * (1 - disk * 0.75) * strength
   for (const side of [-1, 1]) {
     const cx = side * 1.06
     ctx.fillStyle = cachedGradient(ctx, `hole:lobe:${side}`, (c) => {
@@ -82,28 +102,30 @@ export function drawBlackHole(
     return g
   })
   ctx.lineWidth = Math.max(0.035, 1.2 / radius)
+  ctx.globalAlpha = strength
   ctx.beginPath()
   ctx.arc(0, 0, 1.008, 0, TAU)
   ctx.stroke()
+  ctx.globalAlpha = 1
 
-  if (disk > 0.01) {
+  if (diskStrength > 0.01) {
     // with a disk feeding it, the photon ring burns hotter: a soft bloom
     // under a razor-thin core line that shimmers as the disk turns
     ctx.save()
     ctx.globalCompositeOperation = 'lighter'
-    ctx.globalAlpha = disk * 0.55
-    ctx.strokeStyle = cachedGradient(ctx, 'hole:photon-bloom', (c) => {
+    ctx.globalAlpha = diskStrength * 0.55
+    ctx.strokeStyle = cachedGradient(ctx, `hole:photon-bloom:${palette.id}`, (c) => {
       const g = c.createRadialGradient(0, 0, 0.98, 0, 0, 1.11)
-      g.addColorStop(0, 'rgba(255, 236, 210, 0)')
-      g.addColorStop(0.3, 'rgba(255, 228, 196, 0.7)')
-      g.addColorStop(1, 'rgba(255, 190, 140, 0)')
+      g.addColorStop(0, rgba(palette.hot, 0))
+      g.addColorStop(0.3, rgba(palette.hot, 0.7))
+      g.addColorStop(1, rgba(palette.mid, 0))
       return g
     })
     ctx.lineWidth = 0.12
     ctx.beginPath()
     ctx.arc(0, 0, 1.04, 0, TAU)
     ctx.stroke()
-    ctx.globalAlpha = disk * (0.75 + 0.25 * Math.sin(time * 5.3))
+    ctx.globalAlpha = diskStrength * (0.75 + 0.25 * Math.sin(time * 5.3))
     ctx.strokeStyle = 'rgba(255, 252, 245, 1)'
     ctx.lineWidth = Math.max(0.006, 0.9 / radius)
     ctx.beginPath()
@@ -118,9 +140,9 @@ export function drawBlackHole(
   ctx.arc(0, 0, 1, 0, TAU)
   ctx.fill()
 
-  if (disk > 0.01) {
-    drawDiskFront(ctx, time, disk)
-    drawMatterStreams(ctx, time, streams, disk, 1 / radius)
+  if (diskStrength > 0.01) {
+    drawDiskFront(ctx, time, diskStrength, palette)
+    drawMatterStreams(ctx, time, streams, diskStrength, 1 / radius, palette)
   }
 
   ctx.restore()

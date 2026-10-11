@@ -33,7 +33,18 @@ export interface HoleView {
   y: number
   radius: number
   opacity: number
+  /**
+   * 0..1 how present the hole is. A distant hole is a dim, soft backdrop that
+   * must not pull the eye off the path; it comes into focus, and starts to
+   * bend the sky around it, only once it really looms.
+   */
+  focus: number
 }
+
+// in hole radii of remaining distance: fully quiet beyond FAR, full presence
+// inside NEAR
+const FOCUS_FAR_RADII = 9
+const FOCUS_NEAR_RADII = 2.5
 
 function smoothstep(t: number): number {
   const c = Math.min(Math.max(t, 0), 1)
@@ -59,10 +70,13 @@ export function computeHoleView(input: HoleViewInput, layout: Pick<LevelLayout, 
 
   const opacity = 1 - smoothstep((distance / R - FADE_START_RADII) / (FADE_END_RADII - FADE_START_RADII))
 
+  const focus = 1 - smoothstep((distance / R - FOCUS_NEAR_RADII) / (FOCUS_FAR_RADII - FOCUS_NEAR_RADII))
+
   return {
     x: shipScreenX + offset,
     y: screenCentreY + (0 - cameraWorldY) * holeScale,
     radius: R * holeScale,
     opacity,
+    focus,
   }
 }

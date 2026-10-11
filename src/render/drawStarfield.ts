@@ -28,6 +28,9 @@ const WRAP_PAD = 200
 const EINSTEIN_RATIO = 1.45
 // beyond this many horizon radii the bend is under a pixel; skip the maths
 const LENS_REACH = 7
+// close to the hole the sky thickens again: the stars it bends are exempt from
+// the thinning, so the warp reads clearly even deep into the approach
+const NEAR_FIELD_RADII = 4.5
 
 export function generateStars(count: number, width: number, height: number): Star[] {
   const stars: Star[] = []
@@ -98,12 +101,47 @@ function drawStreak(ctx: CanvasRenderingContext2D, x: number, y: number, star: S
 function drawArc(ctx: CanvasRenderingContext2D, lens: Lens, x: number, y: number, star: Star, stretch: number) {
   const angle = Math.atan2(y - lens.y, x - lens.x)
   const r = Math.hypot(x - lens.x, y - lens.y)
-  const sweep = Math.min((star.size * Math.min(stretch, 6)) / Math.max(r, 1), 0.6)
+  const sweep = Math.min((star.size * 2.4 * Math.min(stretch, 9)) / Math.max(r, 1), 0.9)
   ctx.strokeStyle = '#ffffff'
-  ctx.lineWidth = Math.max(star.size * 0.8, 0.6)
+  ctx.lineWidth = Math.max(star.size * 1.1, 0.9)
   ctx.beginPath()
   ctx.arc(lens.x, lens.y, r, angle - sweep, angle + sweep)
   ctx.stroke()
+}
+
+// A hole's own backdrop: a scatter of stars on the far side of it, in orbit
+// around the line of sight, that the lens drags into arcs and piles up along
+// the photon ring. Seeded and analytic, so it costs no state.
+const LENS_FIELD_STARS = 240
+const LENS_FIELD_MIN_STRENGTH = 0.12
+
+function lensSeed(n: number): number {
+  const x = Math.sin(n * 127.1) * 43758.5453
+  return x - Math.floor(x)
+}
+
+function drawLensField(ctx: CanvasRenderingContext2D, lens: Lens, time: number, count: number) {
+  for (let i = 0; i < count; i++) {
+    const angle = lensSeed(i + 1) * Math.PI * 2 + time * 0.03
+    const d = lens.radius * (0.12 + lensSeed(i * 3.7 + 2) * 1.9)
+    const star: Star = {
+      x: 0,
+      y: 0,
+      size: 0.7 + lensSeed(i * 5.3 + 3) * 1.2,
+      twinklePhase: lensSeed(i + 9) * 6.28,
+      rank: 0,
+      depth: 0,
+    }
+    if (!applyLens(lens, lens.x + Math.cos(angle) * d, lens.y + Math.sin(angle) * d)) continue
+    const bx = lensed.x
+    const by = lensed.y
+    if (Math.hypot(bx - lens.x, by - lens.y) < lens.radius * 1.03) continue
+    if (bx < -40 || by < -40 || bx > ctx.canvas.width + 40 || by > ctx.canvas.height + 40) continue
+    const twinkle = 0.6 + 0.4 * Math.sin(time * 1.5 + star.twinklePhase)
+    ctx.globalAlpha = Math.min(0.3 + lens.strength * 0.7 * twinkle, 0.95)
+    if (lensed.stretch > 1.2) drawArc(ctx, lens, bx, by, star, lensed.stretch)
+    else drawPoint(ctx, bx, by, star.size)
+  }
 }
 
 function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
@@ -142,14 +180,20 @@ export function drawStarfield(
   const lensing = lens && lens.strength > 0.01 && streak <= 0.02 ? lens : null
 
   for (const star of stars) {
-    if (star.rank > visibleFraction) continue
-
     let x = wrap(star.x - offsetX * star.depth, spanX)
     let y = wrap(star.y - offsetY * star.depth, spanY)
+
+    let visible = visibleFraction
+    if (lensing) {
+      const near = 1 - Math.hypot(x - lensing.x, y - lensing.y) / (lensing.radius * NEAR_FIELD_RADII)
+      if (near > 0) visible += (1 - visible) * near * lensing.strength
+    }
+    if (star.rank > visible) continue
+
     let alpha = (0.6 + 0.4 * Math.sin(time * 1.5 + star.twinklePhase)) * (0.45 + star.depth * 9)
 
     // fade each star out as it nears the thinning threshold
-    const headroom = visibleFraction - star.rank
+    const headroom = visible - star.rank
     if (headroom < 0.12) alpha *= headroom / 0.12
     if (alpha <= 0.01) continue
 
@@ -164,8 +208,13 @@ export function drawStarfield(
     ctx.globalAlpha = Math.min(alpha * Math.min(stretch, 2.2), 1)
 
     if (streak > 0.02) drawStreak(ctx, x, y, star, streak)
-    else if (lensing && stretch > 1.25) drawArc(ctx, lensing, x, y, star, stretch)
+    else if (lensing && stretch > 1.25) {
+      // bent starlight is the point of the effect: let it burn brighter
+      ctx.globalAlpha = Math.min(alpha * 1.8, 1)
+      drawArc(ctx, lensing, x, y, star, stretch)
+    }
     else drawPoint(ctx, x, y, star.size)
   }
+  if (lensing && lensing.strength > LENS_FIELD_MIN_STRENGTH) drawLensField(ctx, lensing, time, LENS_FIELD_STARS)
   ctx.globalAlpha = 1
 }

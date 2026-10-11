@@ -16,6 +16,8 @@ export interface HoleScreen {
   x: number
   y: number
   radius: number
+  /** 0..1 how present the hole is; a distant one neither bends the sky nor darkens it */
+  focus: number
 }
 
 // the victory burn: once clear, open up to a hard run through the stars
@@ -29,8 +31,9 @@ export function computeVictoryT(store: StoreSnapshot, layout: HoleSegment): numb
 }
 
 // Depth, back to front: black, the level's nebula (furthest parallax
-// layer), its colour wash, three star layers bent by the hole's lens, then
-// the darkness the hole pulls in around itself.
+// layer), its colour wash, the darkness the hole pulls in around itself, then
+// three star layers bent by the hole's lens. The stars go last so the warp
+// reads against the dark instead of being snuffed out by it.
 export function renderBackground(
   ctx: CanvasRenderingContext2D,
   frame: CameraFrame,
@@ -54,6 +57,15 @@ export function renderBackground(
   }
   drawBackdrop(ctx, frame.width, frame.height, getBackdropTheme(store.level), fade)
 
+  drawVoidDarkness(ctx, {
+    x: hole.x,
+    y: hole.y,
+    radius: hole.radius,
+    revealT,
+    width: frame.width,
+    height: frame.height,
+  })
+
   drawStarfield(ctx, stars, {
     time,
     visibleFraction: (1 - revealT * 0.88) * quality.starFraction,
@@ -64,15 +76,6 @@ export function renderBackground(
     offsetX: v.parallaxX,
     offsetY: v.parallaxY,
     // the bend only starts once the hole is actually looming
-    lens: { x: hole.x, y: hole.y, radius: hole.radius, strength: revealT > 0 ? 0.25 + revealT * 0.75 : 0 },
-  })
-
-  drawVoidDarkness(ctx, {
-    x: hole.x,
-    y: hole.y,
-    radius: hole.radius,
-    revealT,
-    width: frame.width,
-    height: frame.height,
+    lens: { x: hole.x, y: hole.y, radius: hole.radius, strength: hole.focus * (0.3 + revealT * 0.7) },
   })
 }

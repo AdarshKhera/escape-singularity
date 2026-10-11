@@ -31,9 +31,14 @@ export function CoachMark({ inputMode }: { inputMode: InputMode }) {
   const [hiddenId, setHiddenId] = useState<number | null>(null)
   const prompt = livePrompt ?? (lastPrompt && lastPrompt.id === doneId ? lastPrompt : null)
 
+  // keyed on the prompt's identity: the adapter hands back a fresh object on
+  // every render, which would loop this effect forever
+  const liveId = livePrompt?.id ?? null
+  const liveText = livePrompt?.text ?? null
+  const liveAction = livePrompt?.action ?? null
   useEffect(() => {
-    if (livePrompt) setLastPrompt(livePrompt)
-  }, [livePrompt])
+    if (liveId !== null && liveText !== null) setLastPrompt({ id: liveId, text: liveText, action: liveAction })
+  }, [liveId, liveText, liveAction])
 
   const key = prompt ? tipKey(prompt.text) : null
   const alreadySeen = key !== null && seenTips.includes(key) && doneId !== prompt?.id
