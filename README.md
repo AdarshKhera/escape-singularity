@@ -1,32 +1,54 @@
-# React + TypeScript + Vite
+# Escape Singularity
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A small 2D space game about one decision: turn away from the black hole early enough, or it keeps you.
 
-Currently, two official plugins are available:
+**Play:** https://adarshkhera.github.io/escape-singularity/
+**Case study:** [docs/CASE_STUDY.md](docs/CASE_STUDY.md)
+**Made by:** Adarsh Khera, Arehk Games
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Escape Singularity](docs/screens/hole-3-near.jpg)
 
-## React Compiler
+Status: work in progress. It plays start to finish (12 levels), and it keeps getting better.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Controls
 
-## Expanding the Oxlint configuration
+| | Keyboard | Touch |
+|---|---|---|
+| Thrust | D or Right arrow | Thrust button |
+| Brake | A or Left arrow | Brake button |
+| Steer | W / S or Up / Down | Steer pad |
+| Boost | Double-tap thrust | Double-tap Thrust |
+| Fire a rocket | Space | Fire button |
+| Pause | P | Pause button |
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+On a phone, play in landscape.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Run it locally
+
+```bash
+npm install
+npm run dev      # http://localhost:5173/escape-singularity/
+npm test         # unit tests for the physics, camera and level maths
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Built with Vite, React, TypeScript, Zustand and Canvas 2D. Tests use Vitest.
+
+## Credits
+
+Art and fonts come from other people's work. Thank you to all of them.
+
+| What | From | Licence |
+|---|---|---|
+| Ship, rocket and shield sprites | "Void - Main Ship" by Baldur, distributed by [Foozle](https://www.foozle.io) | CC0 (public domain) |
+| Planets, moons and asteroids | "Free Celestial Objects Pixel Art Pack" by norma_2d ([DeviantArt](https://www.deviantart.com/norma2d), [Ko-fi](https://ko-fi.com/norma2d)) | Free to use in projects, credit appreciated. The pack itself may not be redistributed or resold, so only the sprites this game uses are included here, and they are not offered for reuse. Please get the full pack from the author. |
+| Display font | [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) | SIL Open Font License |
+| Mono font | [JetBrains Mono](https://www.jetbrains.com/lp/mono/) | SIL Open Font License |
+| Music and sound effects | Written for this game and synthesised in the browser with the Web Audio API | Original |
+| Code, UI, black hole, level design | Adarsh Khera | MIT, see [LICENSE](LICENSE) |
+
+The MIT licence covers the code. The sprites above keep their own licences.
+
+## Privacy
+
+No accounts, no tracking, no network calls except loading the page, its fonts and its assets. Progress and settings stay in your browser's local storage.
