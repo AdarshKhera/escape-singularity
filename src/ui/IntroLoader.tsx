@@ -154,7 +154,14 @@ export function IntroLoader({ onFinish }: IntroLoaderProps) {
     }
     raf = requestAnimationFrame(render)
 
+    // the exit must not hang on frame rate (a throttled or backgrounded page
+    // may barely run animation frames), so it is also checked on a timer
+    const exitCheck = window.setInterval(() => {
+      if (performance.now() - startRef.current >= MIN_MS && readyRef.current) leave()
+    }, 200)
+
     return () => {
+      window.clearInterval(exitCheck)
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
       window.removeEventListener('keydown', onKey)
