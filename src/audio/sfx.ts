@@ -15,6 +15,8 @@ export type SfxKind =
   | 'slingshot'
   | 'warning'
   | 'dryFire'
+  | 'warpIn'
+  | 'warpOut'
 
 export interface SfxContext {
   ctx: AudioContext
@@ -30,13 +32,13 @@ export function createNoiseBuffer(ctx: AudioContext, seconds = 1): AudioBuffer {
   return buffer
 }
 
-function envelope(gain: GainNode, t: number, peak: number, attack: number, decay: number) {
+export function envelope(gain: GainNode, t: number, peak: number, attack: number, decay: number) {
   gain.gain.setValueAtTime(0.0001, t)
   gain.gain.exponentialRampToValueAtTime(peak, t + attack)
   gain.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay)
 }
 
-function noiseBurst(
+export function noiseBurst(
   s: SfxContext,
   opts: { type: BiquadFilterType; freq: number; endFreq?: number; q?: number; peak: number; attack: number; decay: number; delay?: number },
 ) {
@@ -56,7 +58,7 @@ function noiseBurst(
   src.stop(t + opts.attack + opts.decay + 0.05)
 }
 
-function tone(
+export function tone(
   s: SfxContext,
   opts: { type: OscillatorType; freq: number; endFreq?: number; peak: number; attack: number; decay: number; delay?: number },
 ) {
@@ -120,6 +122,17 @@ const VOICES: Record<SfxKind, (s: SfxContext, intensity: number) => void> = {
       tone(s, { type: 'triangle', freq, peak: 0.1, attack: 0.25, decay: 1.6, delay })
     }
     noiseBurst(s, { type: 'highpass', freq: 5000, peak: 0.08, attack: 0.3, decay: 1.2 })
+  },
+  // dropping out of warp: a falling whoosh that lands on a soft thump
+  warpIn: (s) => {
+    noiseBurst(s, { type: 'bandpass', freq: 4200, endFreq: 260, q: 1.6, peak: 0.16, attack: 0.08, decay: 0.75 })
+    tone(s, { type: 'sine', freq: 420, endFreq: 70, peak: 0.08, attack: 0.05, decay: 0.8 })
+    tone(s, { type: 'sine', freq: 90, endFreq: 45, peak: 0.22, attack: 0.005, decay: 0.35, delay: 0.82 })
+  },
+  // punching out: a rising whoosh with a bright tail
+  warpOut: (s) => {
+    noiseBurst(s, { type: 'bandpass', freq: 300, endFreq: 5200, q: 1.4, peak: 0.2, attack: 0.25, decay: 0.45 })
+    tone(s, { type: 'sawtooth', freq: 90, endFreq: 760, peak: 0.07, attack: 0.2, decay: 0.45 })
   },
   warning: (s) => {
     tone(s, { type: 'square', freq: 880, peak: 0.06, attack: 0.005, decay: 0.12 })

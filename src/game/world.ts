@@ -4,6 +4,9 @@
 
 import { createFeedback, resetFeedback, type Feedback } from './feedback'
 import { ParticlePool } from './particles'
+import { createQualityMonitor, type QualityMonitor } from './quality'
+import { createVisualState, type VisualState } from './visualState'
+import { createTutorialState, type TutorialState } from './tutorialSystem'
 
 export type ObstacleType =
   | 'asteroid'
@@ -58,6 +61,8 @@ export interface Ring {
   /** world units at the end of the expansion */
   maxRadius: number
   rgb: string
+  /** a filled glow (an explosion's flash) rather than a shockwave line */
+  flare?: boolean
 }
 
 export interface Popup {
@@ -106,6 +111,8 @@ export interface GameWorld {
   nextSpawnWorldX: number
   nextId: number
   invulnerableTimer: number
+  /** game seconds left of the beat between a fatal hit and the life lost */
+  deathBeat: number
   suckInElapsed: number
   escapeSide: -1 | 1
   prevWorldX: number
@@ -143,6 +150,12 @@ export interface GameWorld {
   thrusterCarry: number
   /** last frame's camera scale (screen px per world unit), for screen-sized effects */
   viewScale: number
+  /** cosmetic state: engine ribbon, parallax, flourishes, ghost path */
+  visuals: VisualState
+  /** adaptive effects budget, driven by measured frame times */
+  quality: QualityMonitor
+  /** which coaching prompts have shown, and the one on screen */
+  tutorial: TutorialState
 }
 
 // Request ids are monotonic in the store and survive a quit to menu, so a
@@ -162,6 +175,7 @@ export function createWorld(requestIds: { boost: number; fire: number }): GameWo
     nextSpawnWorldX: FIRST_SPAWN_WORLD_X,
     nextId: 0,
     invulnerableTimer: 0,
+    deathBeat: 0,
     suckInElapsed: 0,
     escapeSide: -1,
     prevWorldX: 0,
@@ -193,6 +207,9 @@ export function createWorld(requestIds: { boost: number; fire: number }): GameWo
     runTimePushedMs: 0,
     thrusterCarry: 0,
     viewScale: 0.62,
+    visuals: createVisualState(),
+    quality: createQualityMonitor(),
+    tutorial: createTutorialState(),
   }
 }
 
@@ -209,6 +226,7 @@ export function resetWorldForRun(world: GameWorld): void {
   resetFeedback(world.feedback)
   world.nextSpawnWorldX = FIRST_SPAWN_WORLD_X
   world.suckInElapsed = 0
+  world.deathBeat = 0
   world.guideFlash = 0
   world.approachArmed = false
   world.lastSegmentHoleX = null

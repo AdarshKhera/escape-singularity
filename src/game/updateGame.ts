@@ -12,16 +12,20 @@ import {
 } from '../levels/worldConfig'
 import type { HoleSegment, LevelDefinition } from '../levels/levels'
 import type { GameWorld } from './world'
-import { computeFuelDrainRate, stepShip, type ShipControls } from './shipStep'
+import { computeFuelDrainRate, shipMaxSpeed, stepShip, type ShipControls } from './shipStep'
 import { runSpawners } from './spawnSystem'
 import { resolveObstacleCollisions } from './collisionSystem'
 import { handleFireRequest, stepProjectiles } from './combatSystem'
 import { updateHazards } from './hazardSystem'
 import { SLINGSHOT_SPEED, updatePlanets } from './planetSystem'
-import { INVULNERABLE_SECONDS } from './damage'
 import { computeSkimBonus } from './scoring'
 import { onBoost, onEscape, onFuelCache, showEventBanner } from './gameEvents'
-import { emitThrusters } from './thrusters'
+import { emitDamageSmoke, emitThrusters } from './thrusters'
+import { shipTuningFor } from './shipTuning'
+import { updateTutorial } from './tutorialSystem'
+import { recordPath } from './visualState'
+import { stepDeathBeat } from './damage'
+import { EXIT_HOLD_SECONDS } from './flourish'
 
 // the approach warning fires this far ahead of the pull window opening
 const EARLY_WARNING_LEAD = 2600
@@ -133,6 +137,13 @@ function showIntro(world: GameWorld, level: LevelDefinition) {
 
 export function updatePlaying(world: GameWorld, frame: FrameContext): void {
   const { level, layout, dt } = frame
+  // the ship has been destroyed: the world holds while the wreck burns
+  if (stepDeathBeat(world, dt)) return
+  // the ship is punching out of the level: hold the world, finish after it
+  if (world.visuals.exiting) {
+    if (world.visuals.exit >= EXIT_HOLD_SECONDS) useGameStore.getState().completeLevel()
+    return
+  }
   const store = useGameStore.getState()
   const shipWorldX = store.shipWorldX
   const phase = resolvePhase(shipWorldX, layout)
@@ -164,7 +175,8 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
     pickupBoosting: world.pickupBoostTimer > 0,
     extraSpeed: world.slingshotTimer > 0 ? SLINGSHOT_SPEED : 0,
   }
-  const env = { level, layout, phase, time }
+  const tuning = shipTuningFor(store.shipSkinId)
+  const env = { level, layout, phase, time, tuning }
   const drainRate = computeFuelDrainRate(controls, env, ship)
   if (drainRate > 0 && store.fuel > 0) store.drainFuel(drainRate * dt)
 
@@ -177,6 +189,22 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
   updateInvulnerability(world, dt)
   updateRunClock(world, dt)
   emitThrusters(world, next, controls, phase, dt)
+  emitDamageSmoke(world, next, store.lives, dt)
+  recordPath(world.visuals, next.worldX, next.lateral)
+  updateTutorial(
+    world.tutorial,
+    {
+      level: level.id,
+      phase,
+      shipWorldX: next.worldX,
+      speedRatio: next.forwardSpeed / shipMaxSpeed(tuning),
+      attemptSeconds: world.visuals.warpIn,
+      approachWarned: world.guideFlash > 0,
+      boostReady: world.boostTimer <= 0 && world.boostCooldown <= 0,
+      boosting: world.boostTimer > 0,
+    },
+    dt,
+  )
   runSpawners(world, level, frame.segments, next.worldX, useGameStore.getState().fuel / FUEL_MAX)
   updateHazards(world, level, next.worldX, next.lateral, dt)
   updatePlanets(world, level, layout.blackHoleX, next.worldX, next.lateral, time)
@@ -192,14 +220,16 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
     world.suckInElapsed = 0
     useGameStore.getState().beginSuckIn()
   } else if (next.worldX >= frame.levelEndX) {
-    useGameStore.getState().completeLevel()
+    // the ship punches out first; the level completes once it has gone
+    world.visuals.exiting = true
   }
 }
 
 export function updateSuckedIn(world: GameWorld, dt: number): void {
   world.suckInElapsed += dt
   if (world.suckInElapsed >= SUCK_IN_SECONDS) {
-    useGameStore.getState().loseLife('blackhole')
-    world.invulnerableTimer = INVULNERABLE_SECONDS
+    const store = useGameStore.getState()
+    store.loseLife('blackhole')
+    world.invulnerableTimer = shipTuningFor(store.shipSkinId).invulnerableSeconds
   }
 }

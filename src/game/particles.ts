@@ -13,6 +13,7 @@ export const PARTICLE_COLORS = [
   '200,230,255', // 7 thruster white-blue
   '190,130,255', // 8 ion violet
   '255,255,255', // 9 white
+  '96,98,110', // 10 smoke
 ] as const
 
 export type ParticleColor = number
@@ -28,6 +29,7 @@ export const PC = {
   thruster: 7,
   ion: 8,
   white: 9,
+  smoke: 10,
 } as const
 
 const CAPACITY = 900
@@ -45,6 +47,8 @@ export class ParticlePool {
   /** 1 = additive glow, 0 = normal (debris) */
   readonly glow = new Uint8Array(CAPACITY)
   count = 0
+  /** soft cap below capacity; adaptive quality lowers it on slow devices */
+  limit = CAPACITY
 
   spawn(
     x: number,
@@ -57,7 +61,7 @@ export class ParticlePool {
     drag = 1.5,
     glow = true,
   ): void {
-    if (this.count >= CAPACITY) return
+    if (this.count >= this.limit) return
     const i = this.count++
     this.x[i] = x
     this.y[i] = y

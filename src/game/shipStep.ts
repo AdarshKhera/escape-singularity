@@ -27,6 +27,7 @@ import {
 } from '../levels/worldConfig'
 import { planetWorldY } from '../levels/planetMotion'
 import type { HoleSegment, LevelDefinition } from '../levels/levels'
+import { NEUTRAL_TUNING, type ShipTuning } from './shipTuning'
 
 // The ship's flight model as a pure function of (state, controls, world).
 // The RAF loop and the headless level simulator both call this exact code,
@@ -57,6 +58,8 @@ export interface ShipEnvironment {
   phase: LevelPhase
   /** game seconds; drives planet orbits, rogue planets and well pulses */
   time: number
+  /** the selected ship's handling; omitted means the Scout's neutral tuning */
+  tuning?: ShipTuning
 }
 
 // Fuel drains from thrusting and from steering — braking is the only free
@@ -73,7 +76,8 @@ export function computeFuelDrainRate(
     controls.throttle > 0 && !controls.pickupBoosting ? THRUST_FUEL_DRAIN_PER_SECOND : 0
   const steerDrain = controls.bank !== 0 ? STEER_FUEL_DRAIN_PER_SECOND : 0
   const ionDrain = isInIonCloud(env.level, ship.worldX, ship.lateral) ? ION_FUEL_DRAIN_PER_SECOND : 0
-  return (thrustDrain + steerDrain) * (env.level.fuelDrainMultiplier ?? 1) + ionDrain
+  const shipDrain = (env.tuning ?? NEUTRAL_TUNING).fuelDrain
+  return (thrustDrain + steerDrain) * (env.level.fuelDrainMultiplier ?? 1) * shipDrain + ionDrain
 }
 
 // Sum of every planet's lateral pull on the ship at this instant.
@@ -101,34 +105,42 @@ export function laneBoundAt(shipWorldX: number, layout: HoleSegment): number {
   return shipWorldX <= layout.revealStartX ? CRUISE_LANE_BOUND : laneBoundForHole(layout.holeRadius)
 }
 
+/** The throttle's top speed for a ship. */
+export function shipMaxSpeed(tuning: ShipTuning = NEUTRAL_TUNING): number {
+  return THROTTLE_MAX_SPEED * tuning.maxSpeed
+}
+
 function stepForwardSpeed(
   forwardSpeed: number,
   controls: ShipControls,
   phase: LevelPhase,
+  tuning: ShipTuning,
   dt: number,
 ): number {
   // every boost source stacks: a picked-up booster raises the floor, a
   // double-tap or a slingshot on top of it pushes even faster
   const extra = controls.extraSpeed ?? 0
+  const maxSpeed = shipMaxSpeed(tuning)
+  const accelRate = THROTTLE_ACCEL_RATE * tuning.accel
   const speedCeiling =
-    THROTTLE_MAX_SPEED +
-    (controls.pickupBoosting ? THROTTLE_MAX_SPEED * (PICKUP_BOOST_MULTIPLIER - 1) : 0) +
+    maxSpeed +
+    (controls.pickupBoosting ? maxSpeed * (PICKUP_BOOST_MULTIPLIER - 1) : 0) +
     (controls.boosting ? BOOST_SPEED_ADD : 0) +
     extra
 
   let speed = forwardSpeed
   if (phase === 'clear') {
     // clear of the hole: the burn is automatic, not player-held
-    speed = THROTTLE_MAX_SPEED
+    speed = maxSpeed
   } else if (controls.throttle > 0) {
-    speed = Math.min(speedCeiling, speed + THROTTLE_ACCEL_RATE * dt)
+    speed = Math.min(speedCeiling, speed + accelRate * dt)
   } else if (controls.throttle < 0) {
     speed = Math.max(THROTTLE_BRAKE_FLOOR, speed - THROTTLE_BRAKE_RATE * dt)
   } else {
     speed += (THROTTLE_IDLE_SPEED - speed) * Math.min((THROTTLE_DECAY_RATE * dt) / REFERENCE_SPEED, 1)
   }
   if (controls.boosting || controls.pickupBoosting || extra > 0) {
-    speed = Math.min(speedCeiling, speed + THROTTLE_ACCEL_RATE * dt)
+    speed = Math.min(speedCeiling, speed + accelRate * dt)
   }
   return speed
 }
@@ -140,6 +152,7 @@ export function stepShip(
   dt: number,
 ): ShipKinematics {
   const { level, layout, phase, time } = env
+  const tuning = env.tuning ?? NEUTRAL_TUNING
   const distanceToHole = layout.blackHoleX - ship.worldX
 
   const gravityPullY = computeBlackHolePull(
@@ -152,7 +165,7 @@ export function stepShip(
   const wellPullY = computeWellsAccelY(level, ship.worldX, ship.lateral, time)
   const steerScale = isInIonCloud(level, ship.worldX, ship.lateral) ? ION_STEER_SCALE : 1
   const steerAccelY =
-    controls.bank !== 0 && controls.hasFuel ? controls.bank * STEER_ACCEL * steerScale : 0
+    controls.bank !== 0 && controls.hasFuel ? controls.bank * STEER_ACCEL * tuning.steer * steerScale : 0
 
   // breaking free costs extra drag for a short stretch, so clearing the
   // hole takes visible effort rather than snapping to a fast coast
@@ -160,7 +173,7 @@ export function stepShip(
 
   let lateralVelocity = ship.lateralVelocity
   lateralVelocity += (gravityPullY + planetPullY + wellPullY + steerAccelY) * dt
-  lateralVelocity -= lateralVelocity * LATERAL_DAMPING * (1 + exitDrag) * dt
+  lateralVelocity -= lateralVelocity * LATERAL_DAMPING * tuning.damping * (1 + exitDrag) * dt
 
   let lateral = ship.lateral + lateralVelocity * dt
   const laneBound = laneBoundAt(ship.worldX, layout)
@@ -169,7 +182,7 @@ export function stepShip(
     lateralVelocity = 0
   }
 
-  const forwardSpeed = stepForwardSpeed(ship.forwardSpeed, controls, phase, dt)
+  const forwardSpeed = stepForwardSpeed(ship.forwardSpeed, controls, phase, tuning, dt)
   const victoryBurn = phase === 'clear' ? VICTORY_SPEED_MULTIPLIER : 1
   const worldX = ship.worldX + forwardSpeed * victoryBurn * dt
 

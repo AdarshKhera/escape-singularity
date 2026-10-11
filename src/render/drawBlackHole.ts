@@ -1,10 +1,15 @@
 import { cachedGradient } from './gradientCache'
+import { drawDiskBack, drawDiskFront, drawLensedArcs, drawMatterStreams } from './accretionDisk'
 
 interface DrawBlackHoleOptions {
   x: number
   y: number
   radius: number
   time: number
+  /** 0..1 accretion disk strength; 0 (default) is the bare lensed ring */
+  disk?: number
+  /** how many infalling matter streams to draw with the disk */
+  streams?: number
 }
 
 const TAU = Math.PI * 2
@@ -20,7 +25,7 @@ const TAU = Math.PI * 2
 // gradients are built once and reused every frame.
 export function drawBlackHole(
   ctx: CanvasRenderingContext2D,
-  { x, y, radius, time }: DrawBlackHoleOptions,
+  { x, y, radius, time, disk = 0, streams = 0 }: DrawBlackHoleOptions,
 ) {
   if (radius <= 0.5) return
 
@@ -46,8 +51,13 @@ export function drawBlackHole(
   ctx.fill()
   ctx.restore()
 
+  if (disk > 0.01) {
+    drawLensedArcs(ctx, disk * (0.85 + 0.15 * Math.sin(time * 1.3)))
+    drawDiskBack(ctx, time, disk)
+  }
+
   // lensed starlight is brightest where it wraps the limbs
-  ctx.globalAlpha = pulse
+  ctx.globalAlpha = pulse * (1 - disk * 0.75)
   for (const side of [-1, 1]) {
     const cx = side * 1.06
     ctx.fillStyle = cachedGradient(ctx, `hole:lobe:${side}`, (c) => {
@@ -76,11 +86,42 @@ export function drawBlackHole(
   ctx.arc(0, 0, 1.008, 0, TAU)
   ctx.stroke()
 
+  if (disk > 0.01) {
+    // with a disk feeding it, the photon ring burns hotter: a soft bloom
+    // under a razor-thin core line that shimmers as the disk turns
+    ctx.save()
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.globalAlpha = disk * 0.55
+    ctx.strokeStyle = cachedGradient(ctx, 'hole:photon-bloom', (c) => {
+      const g = c.createRadialGradient(0, 0, 0.98, 0, 0, 1.11)
+      g.addColorStop(0, 'rgba(255, 236, 210, 0)')
+      g.addColorStop(0.3, 'rgba(255, 228, 196, 0.7)')
+      g.addColorStop(1, 'rgba(255, 190, 140, 0)')
+      return g
+    })
+    ctx.lineWidth = 0.12
+    ctx.beginPath()
+    ctx.arc(0, 0, 1.04, 0, TAU)
+    ctx.stroke()
+    ctx.globalAlpha = disk * (0.75 + 0.25 * Math.sin(time * 5.3))
+    ctx.strokeStyle = 'rgba(255, 252, 245, 1)'
+    ctx.lineWidth = Math.max(0.006, 0.9 / radius)
+    ctx.beginPath()
+    ctx.arc(0, 0, 1.012, 0, TAU)
+    ctx.stroke()
+    ctx.restore()
+  }
+
   // event horizon: absolute black, drawn last so nothing bleeds into it
   ctx.fillStyle = '#000000'
   ctx.beginPath()
   ctx.arc(0, 0, 1, 0, TAU)
   ctx.fill()
+
+  if (disk > 0.01) {
+    drawDiskFront(ctx, time, disk)
+    drawMatterStreams(ctx, time, streams, disk, 1 / radius)
+  }
 
   ctx.restore()
 }

@@ -1,44 +1,30 @@
 import { TRACKS, type TrackDefinition } from './tracks'
 import { createNoiseBuffer, playSfxVoice, type SfxKind } from './sfx'
+import { playUiVoice, type UiSoundKind } from './uiSounds'
+import {
+  createTensionDrone,
+  playJingleVoice,
+  setDroneTension,
+  stopDrone,
+  type JingleKind,
+  type TensionDrone,
+} from './musicLayers'
+
+import { loadPrefs, savePrefs } from './audioPrefs'
 
 export type { SfxKind } from './sfx'
+export type { UiSoundKind } from './uiSounds'
+export type { JingleKind } from './musicLayers'
 
 const MASTER_LEVEL = 0.9
 const MUSIC_LEVEL = 0.5
 const SFX_LEVEL = 0.7
 // the same effect can't retrigger faster than this (rocket spam, debris storms)
 const SFX_MIN_INTERVAL_MS = 45
-const PREFS_KEY = 'escape-singularity:audio:v1'
-
-interface AudioPrefs {
-  muted: boolean
-  musicMuted: boolean
-  sfxMuted: boolean
-}
-
-function loadPrefs(): AudioPrefs {
-  const fallback = { muted: false, musicMuted: false, sfxMuted: false }
-  try {
-    const raw = globalThis.localStorage?.getItem(PREFS_KEY)
-    if (!raw) return fallback
-    const parsed = JSON.parse(raw) as Partial<AudioPrefs>
-    return {
-      muted: parsed.muted === true,
-      musicMuted: parsed.musicMuted === true,
-      sfxMuted: parsed.sfxMuted === true,
-    }
-  } catch {
-    return fallback
-  }
-}
-
-function savePrefs(prefs: AudioPrefs) {
-  try {
-    globalThis.localStorage?.setItem(PREFS_KEY, JSON.stringify(prefs))
-  } catch {
-    // storage unavailable: preferences just don't persist
-  }
-}
+// the track bed: mellow (filtered) in cruise, opening up under tension
+const BED_CUTOFF_CALM = 1100
+const BED_CUTOFF_TENSE = 3600
+const BED_DUCK_AT_FULL_TENSION = 0.4
 
 type AudioContextCtor = typeof AudioContext
 
@@ -56,6 +42,13 @@ export class AudioEngine {
   private sfxGain: GainNode | null = null
   private noise: AudioBuffer | null = null
   private lastSfxAt: Partial<Record<SfxKind, number>> = {}
+  private lastUiAt: Partial<Record<UiSoundKind, number>> = {}
+
+  // the chord and tick bed of the current track, and the tension drone
+  private bedFilter: BiquadFilterNode | null = null
+  private bedGain: GainNode | null = null
+  private drone: TensionDrone | null = null
+  private tension = 0
 
   private rumbleSource: AudioBufferSourceNode | null = null
   private rumbleGain: GainNode | null = null
@@ -119,6 +112,7 @@ export class AudioEngine {
     this.sfxGain.connect(this.masterGain)
     this.noise = createNoiseBuffer(context)
 
+    this.setupMusicLayers(context, this.musicGain)
     this.setupRumble(context)
     document.addEventListener('visibilitychange', this.onVisibilityChange)
   }
@@ -142,6 +136,72 @@ export class AudioEngine {
       playSfxVoice({ ctx: this.context, out: this.sfxGain, noise: this.noise }, kind, intensity)
     } catch {
       // a voice failing to schedule must never take the game loop down
+    }
+  }
+
+  private setupMusicLayers(context: AudioContext, out: GainNode) {
+    try {
+      this.bedGain = context.createGain()
+      this.bedFilter = context.createBiquadFilter()
+      this.bedFilter.type = 'lowpass'
+      this.bedFilter.frequency.value = BED_CUTOFF_CALM
+      this.bedFilter.connect(this.bedGain).connect(out)
+      this.drone = createTensionDrone(context, out)
+    } catch {
+      // without the layers the bed plays straight into the music bus
+      this.bedFilter = null
+      this.drone = null
+    }
+  }
+
+  /** where track voices connect: the filtered bed, or the music bus */
+  private get bedInput(): AudioNode {
+    return (this.bedFilter ?? this.musicGain) as AudioNode
+  }
+
+  /**
+   * Music tension 0..1 from the game: 0 is a calm cruise, 1 the hole at its
+   * strongest. Swells the drone and opens up the bed. Safe before start().
+   */
+  setTension(tension: number) {
+    const context = this.context
+    if (!context || !this.drone) return
+    const t = Math.min(Math.max(tension, 0), 1)
+    if (Math.abs(t - this.tension) < 0.01) return
+    this.tension = t
+    try {
+      setDroneTension(context, this.drone, t)
+      const now = context.currentTime
+      this.bedFilter?.frequency.setTargetAtTime(BED_CUTOFF_CALM + t * (BED_CUTOFF_TENSE - BED_CUTOFF_CALM), now, 0.5)
+      this.bedGain?.gain.setTargetAtTime(1 - t * BED_DUCK_AT_FULL_TENSION, now, 0.5)
+    } catch {
+      // automation failing must never take the game loop down
+    }
+  }
+
+  /** a musical stinger (level complete, life lost, game over), on the music bus */
+  playJingle(kind: JingleKind) {
+    if (!this.context || !this.musicGain || !this.noise) return
+    if (this.muted || this.musicMuted) return
+    try {
+      playJingleVoice({ ctx: this.context, out: this.musicGain, noise: this.noise }, kind)
+    } catch {
+      // a voice failing to schedule is just a missed sound
+    }
+  }
+
+  /** a short interface sound on the sfx bus; a no-op until start() */
+  playUi(kind: UiSoundKind) {
+    if (!this.context || !this.sfxGain || !this.noise) return
+    if (this.muted || this.sfxMuted) return
+    const now = performance.now()
+    if (now - (this.lastUiAt[kind] ?? 0) < SFX_MIN_INTERVAL_MS) return
+    this.lastUiAt[kind] = now
+    try {
+      if (this.context.state === 'suspended') void this.context.resume().catch(() => undefined)
+      playUiVoice({ ctx: this.context, out: this.sfxGain, noise: this.noise }, kind)
+    } catch {
+      // a voice failing to schedule is just a missed sound
     }
   }
 
@@ -211,7 +271,7 @@ export class AudioEngine {
         gain.gain.setTargetAtTime(0.09, context.currentTime, 1.4)
 
         osc.connect(gain)
-        gain.connect(this.musicGain as GainNode)
+        gain.connect(this.bedInput)
         osc.start()
         this.voices.push({ osc, gain })
       }
@@ -235,7 +295,7 @@ export class AudioEngine {
       gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.06)
 
       osc.connect(gain)
-      gain.connect(this.musicGain as GainNode)
+      gain.connect(this.bedInput)
       osc.start()
       osc.stop(context.currentTime + 0.08)
     }
@@ -299,6 +359,8 @@ export class AudioEngine {
 
   dispose() {
     this.stopTrack()
+    if (this.drone) stopDrone(this.drone)
+    this.drone = null
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
     try {
       this.rumbleSource?.stop()

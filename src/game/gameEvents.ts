@@ -43,6 +43,11 @@ export function addRing(
   world.rings.push({ worldX, worldY, start: world.simTime, duration, maxRadius, rgb })
 }
 
+/** the white-hot flash at the heart of an explosion */
+export function addFlare(world: GameWorld, worldX: number, worldY: number, radius: number, duration: number, rgb: string): void {
+  world.rings.push({ worldX, worldY, start: world.simTime, duration, maxRadius: radius, rgb, flare: true })
+}
+
 export function showEventBanner(world: GameWorld, text: string, seconds: number): void {
   world.eventBanner = text
   world.eventBannerTimer = seconds
@@ -84,8 +89,11 @@ export function onKill(world: GameWorld, obstacle: Obstacle): void {
   const particles = world.particles
   particles.burst(x, y, 14 + Math.round(size * 14), px(world, 520 + size * 200), 0.45, 3.2, PC.spark, true, obstacle.vx)
   particles.burst(x, y, 10 + Math.round(size * 10), px(world, 300 + size * 120), 0.9, 4.5 + size * 2, PC.fire, true, obstacle.vx)
-  particles.burst(x, y, 8 + Math.round(size * 10), px(world, 240), 1.4, 4 + size * 3, PC.rock, false, obstacle.vx)
+  particles.burst(x, y, 8 + Math.round(size * 10), px(world, 420), 1.4, 4 + size * 3, PC.rock, false, obstacle.vx)
+  particles.burst(x, y, 6 + Math.round(size * 6), px(world, 140), 1.6, 5 + size * 3, PC.smoke, false, obstacle.vx)
+  addFlare(world, x, y, obstacle.radius * 1.8 + px(world, 30), 0.28, '255,190,120')
   addRing(world, x, y, obstacle.radius * 2.6 + 40, 0.35, '255,200,130')
+  addRing(world, x, y, obstacle.radius * 4 + px(world, 60), 0.6, '255,150,90')
   addTrauma(world.feedback, 0.18 + size * 0.14)
   triggerHitStop(world.feedback, 0.03 + size * 0.02)
   audioEngine.playSfx(size > 1 ? 'bigExplosion' : 'explosion', 0.7 + size * 0.3)
@@ -110,20 +118,26 @@ export function onFire(world: GameWorld, x: number, y: number): void {
   audioEngine.playSfx('fire')
 }
 
-export function onShipHit(world: GameWorld, x: number, y: number, shieldAbsorbed: boolean): void {
+// severity: the ship's hitFeedback (armour), 1 for the Scout
+export function onShipHit(world: GameWorld, x: number, y: number, shieldAbsorbed: boolean, severity = 1): void {
   world.particles.burst(x, y, 26, px(world, 520), 0.5, 3, shieldAbsorbed ? PC.ice : PC.spark)
   world.particles.burst(x, y, 10, px(world, 260), 1, 3.6, PC.rock, false)
-  addTrauma(world.feedback, shieldAbsorbed ? 0.45 : 0.7)
-  triggerHitStop(world.feedback, shieldAbsorbed ? 0.06 : 0.1)
-  triggerFlash(world.feedback, shieldAbsorbed ? 0.35 : 0.5, shieldAbsorbed ? '150,210,255' : '255,60,50')
+  addTrauma(world.feedback, (shieldAbsorbed ? 0.45 : 0.7) * severity)
+  triggerHitStop(world.feedback, (shieldAbsorbed ? 0.06 : 0.1) * severity)
+  triggerFlash(world.feedback, (shieldAbsorbed ? 0.35 : 0.5) * severity, shieldAbsorbed ? '150,210,255' : '255,60,50')
   audioEngine.playSfx(shieldAbsorbed ? 'shieldBreak' : 'hit')
   if (shieldAbsorbed) {
     addPopup(world, 'SHIELD DOWN', x, y - px(world, 30), POPUP_RGB.info)
     useGameStore.getState().emitHaptic('hit')
   } else {
-    // the ship itself goes up; loseLife already fires the death haptic
+    // the ship itself goes up; loseLife already fires the death haptic.
+    // A beat of slow motion lets the player see exactly what got them.
     world.particles.burst(x, y, 40, px(world, 700), 0.9, 4, PC.fire)
+    world.particles.burst(x, y, 14, px(world, 160), 1.4, 6, PC.smoke, false)
+    addFlare(world, x, y, px(world, 70), 0.35, '255,170,110')
     addRing(world, x, y, px(world, 90), 0.5, '255,150,90')
+    addRing(world, x, y, px(world, 170), 0.8, '255,110,80')
+    triggerSlowMo(world.feedback, 0.7)
   }
 }
 
@@ -156,6 +170,7 @@ export function onEscape(world: GameWorld, x: number, y: number, skimBonus: numb
   triggerFlash(world.feedback, 0.55, '235,245,255')
   addTrauma(world.feedback, 0.3)
   addRing(world, x, y, px(world, 460), 1.1, '220,235,255')
+  addFlare(world, x, y, px(world, 120), 0.5, '220,235,255')
   world.particles.burst(x, y, 60, px(world, 900), 1.2, 3, PC.white, true, px(world, 600))
   audioEngine.playSfx('escape')
   const store = useGameStore.getState()
