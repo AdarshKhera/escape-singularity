@@ -1,20 +1,24 @@
 import {
   BLACK_HOLE_RADIUS,
   CRUISE_LANE_BOUND,
-  REFERENCE_SPEED,
-  STRUGGLE_ZOOM_IN,
   SUCK_IN_ZOOM_OUT,
-  computeStruggleT,
-  laneBoundForHole,
   type LevelLayout,
 } from '../levels/worldConfig'
 
 const CRUISE_SCALE = 0.62
 // the ship's default horizontal position as a fraction of screen width
 export const DEFAULT_SHIP_X_RATIO = 0.16
-// the hole's centre should land no further right than this at commit time,
-// leaving room for its radius
-const HOLE_CENTRE_MAX_X_RATIO = 0.68
+// where the far hole sits on the horizon, as a fraction of the screen width
+export const HOLE_HORIZON_X_RATIO = 0.74
+// at the committed turn the hole's rim should reach this far across the
+// screen: a huge arc filling the lower (or upper) half, with the ship a speck
+// beside it
+const HOLE_END_RADIUS_WIDTH_RATIO = 0.62
+// bigger holes read bigger, but only by the square root of their size
+const HOLE_END_RADIUS_GROWTH = 0.5
+// how much of the ship's lateral offset the camera takes up at the hole, so
+// the hole slides away instead of the ship climbing off the screen
+const APPROACH_FOLLOW = 0.85
 
 // Reserves room at the top of the canvas for the HUD panel, which sits above
 // the game canvas in the DOM and would otherwise occlude the ship whenever it
@@ -54,10 +58,6 @@ function fitScaleFor(height: number, maxOffset: number): number {
   return Math.max(halfBand, 1) / Math.max(maxOffset, 1)
 }
 
-function computeVerticalFit(height: number, holeRadius: number): number {
-  return fitScaleFor(height, laneBoundForHole(holeRadius))
-}
-
 // How far off centreline the camera will follow the ship during ordinary
 // cruise flight, before the approach locks in. Keeps the ship (and the
 // debris around it) framed without ever fully re-centring on it — straying
@@ -77,24 +77,21 @@ function computeCruiseScale(height: number): number {
   return Math.min(CRUISE_SCALE, fitScaleFor(height, worstOffset))
 }
 
-// The framing the approach settles into: both escape lanes must fit vertically
-// and the whole hole must sit on screen when the player has to commit. Takes
-// the hole's actual radius so a bigger-than-usual hole (a level's second,
-// larger pass) still gets pulled back far enough to fit.
+// The framing the approach settles into. The world is pulled well back, so
+// the hole's rim spans most of the screen while the ship stays a speck beside
+// it (the ship is drawn at a fixed pixel size and shrinks further at the
+// peak). Because the hole is that big on screen, the camera follows the ship
+// across the turn (see computeCameraWorldY) and computeCameraView still
+// guarantees the ship is in frame.
 export function computeApproachScale(
   width: number,
-  height: number,
   holeRadius: number = BLACK_HOLE_RADIUS,
-  shipXRatio: number = DEFAULT_SHIP_X_RATIO,
 ): number {
-  const verticalFit = computeVerticalFit(height, holeRadius)
-  const horizontalFit = (width * (HOLE_CENTRE_MAX_X_RATIO - shipXRatio)) / (REFERENCE_SPEED * 10)
-  const holeFit = (width * 0.44) / holeRadius
-  return Math.min(verticalFit, horizontalFit, holeFit)
+  const sizeBoost = Math.pow(holeRadius / BLACK_HOLE_RADIUS, HOLE_END_RADIUS_GROWTH)
+  return (HOLE_END_RADIUS_WIDTH_RATIO * width * sizeBoost) / holeRadius
 }
 
-// Pull back across the reveal, hold that framing through the pass (with the
-// struggle push-in layered on top, peaking exactly at the hole), then ease
+// Pull back across the reveal, hold that framing through the pass, then ease
 // back in over an identical span so the recovery is as gradual as the reveal.
 export function computeCameraScale(
   shipWorldX: number,
@@ -102,11 +99,9 @@ export function computeCameraScale(
   height: number,
   layout: LevelLayout,
   holeRadius: number = BLACK_HOLE_RADIUS,
-  shipXRatio: number = DEFAULT_SHIP_X_RATIO,
 ): number {
-  const approachScale = computeApproachScale(width, height, holeRadius, shipXRatio)
+  const approachScale = Math.min(computeApproachScale(width, holeRadius), computeCruiseScale(height))
   const cruiseScale = computeCruiseScale(height)
-  const struggleMultiplier = 1 + (STRUGGLE_ZOOM_IN - 1) * computeStruggleT(shipWorldX, layout)
 
   if (shipWorldX <= layout.revealStartX) return cruiseScale
 
@@ -117,9 +112,7 @@ export function computeCameraScale(
     return cruiseScale + (approachScale - cruiseScale) * t
   }
 
-  if (shipWorldX < layout.escapeClearX) {
-    return Math.min(approachScale * struggleMultiplier, computeVerticalFit(height, holeRadius))
-  }
+  if (shipWorldX < layout.escapeClearX) return approachScale
 
   const t = smoothstep(
     (shipWorldX - layout.escapeClearX) / (layout.levelEndX - layout.escapeClearX),
@@ -137,10 +130,11 @@ export function applySuckInZoomOut(scale: number, suckInT: number): number {
 // World Y the camera centres on.
 //
 // During ordinary cruise flight the camera drifts a little to keep the ship
-// in view, easing back to the centreline across the reveal so the hole holds
-// its place in frame through the approach. Once past it, the camera hands
-// back over to the ship — otherwise a ship that climbed thousands of units
-// off-axis would slide out of view as the camera zooms back in.
+// in view, easing back to the centreline across the reveal so the hole sits
+// dead ahead while it is still a distant disc. Through the final approach the
+// camera follows the ship's turn (most of the way), so the huge hole slides
+// below or above the frame instead of the ship leaving it. Once past, the
+// camera hands fully over to the ship as the zoom eases back in.
 export function computeCameraWorldY(
   shipWorldX: number,
   shipLateral: number,
@@ -153,11 +147,16 @@ export function computeCameraWorldY(
     )
     return cruiseFollow(shipLateral) * (1 - t)
   }
-  if (shipWorldX <= layout.blackHoleX) return 0
-  const follow = smoothstep(
+  if (shipWorldX <= layout.blackHoleX) {
+    const closing = smoothstep(
+      (shipWorldX - layout.approachStartX) / (layout.blackHoleX - layout.approachStartX),
+    )
+    return shipLateral * APPROACH_FOLLOW * closing
+  }
+  const handover = smoothstep(
     (shipWorldX - layout.blackHoleX) / (layout.escapeClearX - layout.blackHoleX),
   )
-  return shipLateral * follow
+  return shipLateral * (APPROACH_FOLLOW + (1 - APPROACH_FOLLOW) * handover)
 }
 
 export interface CameraView {
@@ -177,10 +176,9 @@ export function computeCameraView(
   height: number,
   layout: LevelLayout,
   holeRadius: number = BLACK_HOLE_RADIUS,
-  shipXRatio: number = DEFAULT_SHIP_X_RATIO,
 ): CameraView {
   const cameraWorldY = computeCameraWorldY(shipWorldX, shipLateral, layout)
-  const curve = computeCameraScale(shipWorldX, width, height, layout, holeRadius, shipXRatio)
+  const curve = computeCameraScale(shipWorldX, width, height, layout, holeRadius)
   const shipFit = fitScaleFor(height, Math.abs(shipLateral - cameraWorldY))
   return { scale: Math.min(curve, shipFit), cameraWorldY }
 }

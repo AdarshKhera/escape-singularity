@@ -236,28 +236,16 @@ export function computeRevealT(shipWorldX: number, layout: LevelLayout): number 
   return Math.max(1 - t * 1.35, 0)
 }
 
-// The hole looms larger the closer the ship gets. This is on top of the camera
-// pull-back, so it reads as the hole genuinely swelling rather than the view
-// simply zooming: at the start of the run it sits small on the horizon, by the
-// approach it dominates.
-export const HORIZON_GROWTH = 0.55
-
-export function computeHorizonScale(shipWorldX: number, layout: LevelLayout): number {
-  const t = Math.min(Math.max(shipWorldX / layout.blackHoleX, 0), 1)
-  return 1 - HORIZON_GROWTH * (1 - Math.pow(t, 1.6))
-}
-
 // Victory run: once clear, the ship opens up to a hard burn through the stars.
 export const VICTORY_SPEED_MULTIPLIER = 4
 export const VICTORY_STREAK_RAMP = 0.9
 
 // The "struggle": as the ship closes on the hole and slingshots across it, the
-// camera pushes in and the ship itself reads a little smaller against it,
-// selling the hole's true scale, then eases back out afterwards. It is a bell
-// curve centred exactly on the hole, spanning the whole approach-to-clear
-// window, not just the instant of closest approach.
-export const STRUGGLE_ZOOM_IN = 2.05
-export const STRUGGLE_SHIP_SHRINK = 0.72
+// ship itself reads smaller and smaller against the hole's vast arc, selling
+// its true scale, then recovers afterwards. It is a bell curve centred
+// exactly on the hole, spanning the whole approach-to-clear window, not just
+// the instant of closest approach.
+export const STRUGGLE_SHIP_SHRINK = 0.5
 
 export function computeStruggleT(shipWorldX: number, layout: LevelLayout): number {
   if (shipWorldX <= layout.approachStartX || shipWorldX >= layout.escapeClearX) return 0

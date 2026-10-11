@@ -1,12 +1,13 @@
-import { computeHorizonScale, computeRevealT } from '../levels/worldConfig'
+import { computeRevealT } from '../levels/worldConfig'
 import type { HoleSegment, LevelDefinition } from '../levels/levels'
 import type { useGameStore } from '../state/gameStore'
 import { drawBlackHole } from '../render/drawBlackHole'
 import { drawBlackHoleLabel } from '../render/drawBlackHoleLabel'
 import { drawSpeedLines } from '../render/drawSpeedLines'
+import { computeHoleView } from '../render/holeView'
 import type { Star } from '../render/drawStarfield'
 import type { Sprites } from '../render/loadSprites'
-import { toScreenX, toScreenY, type CameraFrame } from './camera'
+import { toScreenY, type CameraFrame } from './camera'
 import { qualitySettings } from './quality'
 import { renderBackground, type HoleScreen } from './renderBackground'
 import { renderShipLayer } from './renderShip'
@@ -49,8 +50,11 @@ function labelOpacity(input: RenderInputs, hole: HoleScreen, revealT: number): n
   return Math.min(revealT, 1) * Math.min(Math.max(near, 0.15), 1)
 }
 
-function renderHole(input: RenderInputs, hole: HoleScreen, revealT: number): void {
+function renderHole(input: RenderInputs, hole: HoleScreen, opacity: number, revealT: number): void {
   const { ctx, layout, time, world } = input
+  if (opacity <= 0.01) return
+  ctx.save()
+  ctx.globalAlpha = opacity
   drawBlackHole(ctx, {
     x: hole.x,
     y: hole.y,
@@ -68,26 +72,39 @@ function renderHole(input: RenderInputs, hole: HoleScreen, revealT: number): voi
     hole.radius,
     labelOpacity(input, hole, revealT),
   )
+  ctx.restore()
 }
 
 export function renderFrame(input: RenderInputs): void {
   const { ctx, frame, world, level, layout, store, sprites, stars, time, dt } = input
   const revealT = computeRevealT(store.shipWorldX, layout)
-  const hole: HoleScreen = {
-    x: toScreenX(frame, layout.blackHoleX),
-    y: toScreenY(frame, 0),
-    // grows as the ship closes in, on top of the camera pull-back
-    radius: layout.holeRadius * frame.scale * computeHorizonScale(store.shipWorldX, layout),
-  }
+  // a distant disc on the horizon that swells by perspective as the ship
+  // closes in (see holeView.ts)
+  const view = computeHoleView(
+    {
+      shipWorldX: store.shipWorldX,
+      holeRadius: layout.holeRadius,
+      blackHoleX: layout.blackHoleX,
+      width: frame.width,
+      scale: frame.scale,
+      shipScreenX: frame.shipScreenX,
+      screenCentreY: frame.screenCentreY,
+      cameraWorldY: frame.cameraWorldY,
+    },
+    layout,
+  )
+  const hole: HoleScreen = { x: view.x, y: view.y, radius: view.radius }
+  // lensing and darkness follow the hole in as it fades into view
+  const faded: HoleScreen = { x: view.x, y: view.y, radius: view.radius * view.opacity }
 
-  renderBackground(ctx, frame, world, store, layout, stars, hole, revealT, time)
+  renderBackground(ctx, frame, world, store, layout, stars, faded, revealT, time)
 
   // the world layer shakes; full-screen overlays below do not
   ctx.save()
   ctx.translate(world.feedback.shakeX, world.feedback.shakeY)
   // the hole (and its bright disk) sits behind everything solid, so no
   // hazard can ever hide in its glow
-  renderHole(input, hole, revealT)
+  renderHole(input, hole, view.opacity, revealT)
   renderFields(ctx, frame, level, time, store.shipLateral)
   renderGhost(ctx, frame, world)
   renderPlanets(ctx, frame, level, layout, sprites, time, store.shipLateral)

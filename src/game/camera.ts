@@ -94,7 +94,6 @@ export function updateCameraFrame(
     height,
     layout,
     layout.holeRadius,
-    frame.shipXRatio,
   )
   let scale = view.scale
   if (ship.suckedIn) {
