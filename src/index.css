@@ -6,9 +6,9 @@
   --es-ink-soft: #c9ced6;
   --es-muted: rgba(231, 233, 238, 0.56);
   --es-faint: rgba(231, 233, 238, 0.32);
-  --es-accent: #3de8ff;
-  --es-accent-soft: rgba(61, 232, 255, 0.1);
-  --es-accent-glow: rgba(61, 232, 255, 0.22);
+  --es-accent: #ffffff;
+  --es-accent-soft: rgba(255, 255, 255, 0.07);
+  --es-accent-glow: rgba(255, 255, 255, 0.15);
   --es-warm: #ffb37a;
   --es-danger: #ff6b6b;
   --es-gold: #ffd36b;
@@ -61,7 +61,7 @@ body {
   position: fixed;
   inset: 0;
   color: var(--es-ink);
-  font-family: var(--es-font-mono);
+  font-family: var(--es-font-display);
   -webkit-font-smoothing: antialiased;
   user-select: none;
   -webkit-user-select: none;

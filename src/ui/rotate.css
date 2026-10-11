@@ -16,11 +16,11 @@
 .es-rotate__phone {
   width: 96px;
   height: 96px;
-  fill: rgba(61, 232, 255, 0.06);
+  fill: rgba(255, 255, 255, 0.04);
   stroke: var(--es-accent);
   stroke-width: 2.2;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 12px rgba(61, 232, 255, 0.35));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.24));
   animation: es-rotate-phone 2.4s cubic-bezier(0.6, 0, 0.3, 1) infinite;
 }
 

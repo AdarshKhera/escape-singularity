@@ -95,7 +95,7 @@ The interface had three passes. The first was blue-black and retro. The second w
 
 The HUD is still only four things: the level number and name, your lives, a fuel bar, and a slim track showing how far you are from the next hole. Rockets and shield show up only while you hold them. The labels drawn on the game itself (planets, the black hole's name, pickups) use the same type, so nothing looks pasted on. Anything that needs more room (ships, records, settings) lives in menus instead of on screen during play.
 
-The menus have not had this pass yet. They still carry the older graphite and cyan look, and the same treatment is next.
+The menus then got the same pass: the cyan is gone, the main button is a soft white pill, the whole interface uses one typeface, and the home screen has more room on the left. The sub-screens (levels, hangar, records, settings) take the same colours but are not yet redrawn as glass. That is next.
 
 ![The home screen](screens/02-home.jpg)
 ![The hangar](screens/04-hangar.jpg)

@@ -61,8 +61,8 @@
 }
 
 .es-steer[data-active='true'] .es-steer__track {
-  background: rgba(61, 232, 255, 0.1);
-  border-color: rgba(61, 232, 255, 0.45);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 .es-steer__track::before {
@@ -99,7 +99,7 @@
 
 .es-steer__chevron[data-active='true'] {
   stroke: var(--es-accent);
-  filter: drop-shadow(0 0 6px rgba(61, 232, 255, 0.7));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.49));
 }
 
 .es-steer__knob {
@@ -117,7 +117,7 @@
 
 .es-steer[data-active='true'] .es-steer__knob {
   border-color: var(--es-accent);
-  box-shadow: 0 0 16px rgba(61, 232, 255, 0.45);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.32);
 }
 
 /* ---------- Action buttons ---------- */
@@ -176,13 +176,13 @@
   width: clamp(80px, 25vh, 96px);
   height: clamp(80px, 25vh, 96px);
   color: var(--es-accent);
-  border-color: rgba(61, 232, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 .es-tbtn--thrust[data-active='true'] {
-  background: rgba(61, 232, 255, 0.22);
+  background: rgba(255, 255, 255, 0.15);
   border-color: var(--es-accent);
-  box-shadow: 0 0 26px rgba(61, 232, 255, 0.4);
+  box-shadow: 0 0 26px rgba(255, 255, 255, 0.28);
 }
 
 .es-tbtn--brake {

@@ -96,7 +96,7 @@
   position: absolute;
   inset: 0 auto 0 0;
   background: var(--es-accent);
-  box-shadow: 0 0 10px rgba(61, 232, 255, 0.7);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.49);
   transition: width 200ms linear;
 }
 
