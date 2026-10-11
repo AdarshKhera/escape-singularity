@@ -13,8 +13,8 @@ import { computeApproachScale, HOLE_HORIZON_X_RATIO } from './cameraScale'
 // the capture boundary really is.
 
 // beyond this distance (in hole radii) the hole fades out of view entirely
-const FADE_START_RADII = 8
-const FADE_END_RADII = 12
+const FADE_START_RADII = 6.5
+const FADE_END_RADII = 11
 
 export interface HoleViewInput {
   shipWorldX: number
