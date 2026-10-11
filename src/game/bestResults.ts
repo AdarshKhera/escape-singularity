@@ -59,3 +59,11 @@ export function mergeBestResult(
   }
   return { results: { ...results, [level]: merged }, isNewBest }
 }
+
+export function clearSavedBestResults(): void {
+  try {
+    globalThis.localStorage?.removeItem(STORAGE_KEY)
+  } catch {
+    // nothing to forget if storage is unavailable
+  }
+}

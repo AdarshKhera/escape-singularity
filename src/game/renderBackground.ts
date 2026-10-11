@@ -20,7 +20,7 @@ export interface HoleScreen {
 
 // the victory burn: once clear, open up to a hard run through the stars
 export function computeVictoryT(store: StoreSnapshot, layout: HoleSegment): number {
-  if (store.phase !== 'clear') return 0
+  if (store.phase !== 'clear' || store.status !== 'playing') return 0
   const t =
     (store.shipWorldX - layout.escapeClearX) /
     (layout.levelEndX - layout.escapeClearX) /

@@ -9,6 +9,7 @@ import {
   type StarReasons,
 } from '../game/scoring'
 import {
+  clearSavedBestResults,
   loadBestResults,
   mergeBestResult,
   saveBestResults,
@@ -97,6 +98,10 @@ interface GameState {
   paused: boolean
 
   togglePause: () => void
+  /** the ship is punching out of a finished level: pausing would throw the clear away */
+  levelExiting: boolean
+  beginLevelExit: () => void
+  clearBestResults: () => void
   hasWeapon: boolean
   ammo: number
   shieldCharges: number
@@ -170,6 +175,7 @@ function freshFlight() {
     invulnerable: false,
     bannerMessage: null,
     paused: false,
+    levelExiting: false,
     runStats: createRunStats(),
     levelResult: null,
     tutorialPrompt: null,
@@ -214,7 +220,15 @@ export const useGameStore = create<GameState>((set, get) => ({
   livesAtLevelStart: INITIAL_LIVES,
   hapticEvent: { id: 0, kind: 'hit' },
 
-  togglePause: () => set((s) => ({ paused: !s.paused })),
+  levelExiting: false,
+  beginLevelExit: () => set({ levelExiting: true }),
+  // the saved "new best" history goes with a progress reset
+  clearBestResults: () => {
+    clearSavedBestResults()
+    set({ bestResults: {} })
+  },
+  togglePause: () =>
+    set((s) => (s.levelExiting && !s.paused ? s : { paused: !s.paused })),
 
   requestFire: () => set((s) => ({ fireRequestId: s.fireRequestId + 1 })),
   // no cap — rockets stack as high as you can collect
@@ -286,6 +300,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (isNewBest) saveBestResults(results)
     set({
       status: 'level-complete',
+      levelExiting: false,
       bannerMessage: null,
       runStats: { ...s.runStats, score },
       totalScore: s.totalScore + score,

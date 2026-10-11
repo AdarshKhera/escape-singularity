@@ -76,6 +76,8 @@ export interface CameraInputs {
   shipLateral: number
   shipSpeed: number
   suckedIn: boolean
+  /** the run is in play: boost effects only exist while it is */
+  live: boolean
 }
 
 export function updateCameraFrame(
@@ -100,10 +102,14 @@ export function updateCameraFrame(
     scale = applySuckInZoomOut(scale, world.suckInElapsed / SUCK_IN_SECONDS)
   }
 
-  const boostIntensity = Math.max(
-    Math.min(world.boostTimer / BOOST_SECONDS, 1),
-    Math.min(world.pickupBoostTimer / PICKUP_BOOST_SECONDS, 1),
-  )
+  // the boost timers only count down while the run is in play, so outside it
+  // (death, end screens) they would hold their last value forever
+  const boostIntensity = ship.live
+    ? Math.max(
+        Math.min(world.boostTimer / BOOST_SECONDS, 1),
+        Math.min(world.pickupBoostTimer / PICKUP_BOOST_SECONDS, 1),
+      )
+    : 0
   // eased both ways so the double-tap doesn't snap the zoom
   world.smoothedBoost += (boostIntensity - world.smoothedBoost) * Math.min(dt * 5, 1)
   scale *= 1 - BOOST_ZOOM_OUT * world.smoothedBoost

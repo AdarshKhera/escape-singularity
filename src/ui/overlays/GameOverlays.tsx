@@ -38,7 +38,9 @@ export function GameOverlays({ inputMode, onQuitToMenu }: GameOverlaysProps) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (useGameStore.getState().status !== 'playing') return
+      const live = useGameStore.getState()
+      // a finished level is mid punch-out: nothing may interrupt it
+      if (live.status !== 'playing' || live.levelExiting) return
       const next = !showQuitRef.current
       setPaused(next)
       setShowQuit(next)

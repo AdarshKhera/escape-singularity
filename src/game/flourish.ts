@@ -17,6 +17,7 @@ export const EXIT_SECONDS = 0.7
 /** real seconds into the exit before the level counts as complete (end screen) */
 export const EXIT_HOLD_SECONDS = 0.85
 export const EXIT_STREAK = 1.2
+const EXIT_SETTLE_SECONDS = 0.5
 const ARRIVAL_FLASH = 0.16
 const EXIT_FLASH = 0.42
 // extra star scroll while streaking, px/s at the nearest star layer's depth 1
@@ -46,7 +47,11 @@ export function exitEase(world: GameWorld): number {
 /** star streak from the bookends, 0..~1.2 */
 export function flourishStreak(world: GameWorld): number {
   const warp = (1 - warpInEase(world)) * WARP_IN_STREAK
-  const exit = world.visuals.exiting ? Math.min(world.visuals.exit / EXIT_SECONDS, 1) * EXIT_STREAK : 0
+  // the punch-out streaks fade once the end screen has taken over
+  const settle = 1 - Math.min(Math.max((world.visuals.exit - EXIT_HOLD_SECONDS) / EXIT_SETTLE_SECONDS, 0), 1)
+  const exit = world.visuals.exiting
+    ? Math.min(world.visuals.exit / EXIT_SECONDS, 1) * EXIT_STREAK * settle
+    : 0
   return Math.max(warp, exit)
 }
 

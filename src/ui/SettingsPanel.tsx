@@ -1,3 +1,4 @@
+import { useGameStore } from '../state/gameStore'
 import { useState } from 'react'
 import { useSettingsStore, type TouchControlsMode } from '../state/settingsStore'
 import { useProgressStore } from '../state/progressStore'
@@ -116,6 +117,7 @@ function ResetProgressRow() {
     }
     resetProgress()
     resetRecords()
+    useGameStore.getState().clearBestResults()
     setArmed(false)
     setDone(true)
   }

@@ -222,6 +222,7 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
   } else if (next.worldX >= frame.levelEndX) {
     // the ship punches out first; the level completes once it has gone
     world.visuals.exiting = true
+    useGameStore.getState().beginLevelExit()
   }
 }
 

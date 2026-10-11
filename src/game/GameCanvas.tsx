@@ -59,16 +59,19 @@ export function GameCanvas() {
     // The backing store follows devicePixelRatio (capped for fill-rate on
     // phones) so sprites and lines stay crisp; everything else draws in CSS
     // pixels under a matching transform.
-    const resize = () => {
+    const applyCanvasSize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, qualitySettings(world.quality).maxDpr)
       viewWidth = window.innerWidth
       viewHeight = window.innerHeight
       canvas.width = Math.round(viewWidth * dpr)
       canvas.height = Math.round(viewHeight * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      redrawWhilePaused = true
+    }
+    const resize = () => {
+      applyCanvasSize()
       stars = generateStars(STAR_COUNT, viewWidth, viewHeight)
       frame.shipXRatio = shipScreenXRatio()
-      redrawWhilePaused = true
     }
     resize()
     window.addEventListener('resize', resize)
@@ -89,12 +92,16 @@ export function GameCanvas() {
 
     // a device that can't hold the frame rate sheds effects, then pixels
     const adaptQuality = (frameMs: number) => {
-      // a hidden or backgrounded page is throttled by the browser, not slow
+      // a hidden or backgrounded page is throttled by the browser, not slow, and
+      // frames behind the end-of-run overlays (blur over a live canvas) say
+      // nothing about how the game itself runs
       if (document.hidden || !document.hasFocus()) return
+      if (useGameStore.getState().status !== 'playing') return
       if (!sampleFrame(world.quality, frameMs)) return
       const settings = qualitySettings(world.quality)
       world.particles.limit = settings.particleBudget
-      resize()
+      // only the pixel density changes: the star field must not reshuffle
+      applyCanvasSize()
     }
 
     const loop = (now: number) => {
@@ -174,6 +181,7 @@ export function GameCanvas() {
           shipLateral: latest.shipLateral,
           shipSpeed: latest.shipForwardSpeed,
           suckedIn: latest.status === 'sucked-in',
+          live: latest.status === 'playing',
         },
         viewWidth,
         viewHeight,

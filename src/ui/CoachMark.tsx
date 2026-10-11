@@ -5,7 +5,7 @@ import type { InputMode } from './ControlsGuide'
 import { CheckIcon } from './icons'
 import { useCoachStore } from './coachStore'
 import { coachHint, tipKey } from './coachHints'
-import { useTutorialPrompt } from './gameStoreAdapters'
+import { useTutorialPrompt, type TutorialPromptView } from './gameStoreAdapters'
 import { useLevelIntroStore } from './levelIntroStore'
 import { displayText } from './levelFormat'
 import { useActionDetector } from './useActionDetector'
@@ -18,7 +18,10 @@ const DONE_FLASH_MS = 700
 const NO_ACTION_SEEN_MS = 3500
 
 export function CoachMark({ inputMode }: { inputMode: InputMode }) {
-  const prompt = useTutorialPrompt()
+  const livePrompt = useTutorialPrompt()
+  // the game clears a prompt the frame after the player does it; keep our own
+  // copy so the "Nice" confirmation can still play out
+  const [lastPrompt, setLastPrompt] = useState<TutorialPromptView | null>(null)
   const seenTips = useSettingsStore((s) => s.seenTips)
   const markTipSeen = useSettingsStore((s) => s.markTipSeen)
   const introVisible = useLevelIntroStore((s) => s.visible)
@@ -26,6 +29,11 @@ export function CoachMark({ inputMode }: { inputMode: InputMode }) {
   const setHighlight = useCoachStore((s) => s.setHighlight)
   const [doneId, setDoneId] = useState<number | null>(null)
   const [hiddenId, setHiddenId] = useState<number | null>(null)
+  const prompt = livePrompt ?? (lastPrompt && lastPrompt.id === doneId ? lastPrompt : null)
+
+  useEffect(() => {
+    if (livePrompt) setLastPrompt(livePrompt)
+  }, [livePrompt])
 
   const key = prompt ? tipKey(prompt.text) : null
   const alreadySeen = key !== null && seenTips.includes(key) && doneId !== prompt?.id

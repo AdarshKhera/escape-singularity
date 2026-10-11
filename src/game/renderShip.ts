@@ -96,10 +96,11 @@ export function renderShipLayer(input: ShipLayerInputs): void {
 
   drawGuide(input, x, y)
 
-  // a ship destroyed by a collision has already gone up in the explosion
+  // a ship destroyed by a collision has already gone up in the explosion, and
+  // one swallowed by the hole has already gone in: neither reappears behind
+  // the end screen
   const destroyed =
-    world.deathBeat > 0 ||
-    ((store.status === 'life-lost' || store.status === 'game-over') && store.deathCause === 'collision')
+    world.deathBeat > 0 || store.status === 'life-lost' || store.status === 'game-over'
   if (scale <= 0.02 || destroyed || store.status === 'sucked-in') clearRibbon(world.visuals)
   if (scale <= 0.02 || destroyed) return
 
