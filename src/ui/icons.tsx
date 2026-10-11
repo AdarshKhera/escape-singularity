@@ -26,3 +26,12 @@ export function CheckIcon({ className }: { className?: string }) {
     </svg>
   )
 }
+
+export function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg className={`es-glyph es-glyph--shield${className ? ` ${className}` : ''}`} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z" />
+      <path d="M8.8 12.2l2.2 2.2 4.2-4.6" />
+    </svg>
+  )
+}

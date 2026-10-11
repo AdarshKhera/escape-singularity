@@ -10,11 +10,12 @@ import { useTouchMode } from '../device'
 import { MenuBackdrop } from './MenuBackdrop'
 import { LevelSelect } from './LevelSelect'
 import { Credits, HowToPlay } from './InfoScreens'
+import { Records } from './Records'
 import { Sheet } from './Sheet'
 import { StarTotal } from './StarTotal'
 import './menu.css'
 
-type MenuScreen = 'home' | 'levels' | 'hangar' | 'settings' | 'howto' | 'credits'
+type MenuScreen = 'home' | 'levels' | 'hangar' | 'records' | 'settings' | 'howto' | 'credits'
 
 interface MainMenuProps {
   onStartLevel: (level: number) => void
@@ -49,6 +50,8 @@ export function MainMenu({ onStartLevel }: MainMenuProps) {
           </div>
         </Sheet>
       )}
+
+      {screen === 'records' && <Records onBack={goHome} />}
 
       {screen === 'howto' && <HowToPlay onBack={goHome} preferred={touchMode ? 'touch' : 'keyboard'} />}
 
@@ -90,16 +93,21 @@ function Home({ onStartLevel, onNavigate }: HomeProps) {
         <div className="es-home__grid">
           <Button onClick={() => onNavigate('levels')}>Levels</Button>
           <Button onClick={() => onNavigate('hangar')}>Hangar</Button>
+          <Button onClick={() => onNavigate('records')}>Records</Button>
           <Button onClick={() => onNavigate('settings')}>Settings</Button>
-          <Button onClick={() => onNavigate('howto')}>How to play</Button>
         </div>
       </nav>
 
       <footer className="es-home__footer">
         <span>Created by Adarsh Khera</span>
-        <Button variant="ghost" onClick={() => onNavigate('credits')}>
-          Credits
-        </Button>
+        <span className="es-home__links">
+          <Button variant="ghost" onClick={() => onNavigate('howto')}>
+            How to play
+          </Button>
+          <Button variant="ghost" onClick={() => onNavigate('credits')}>
+            Credits
+          </Button>
+        </span>
       </footer>
     </div>
   )

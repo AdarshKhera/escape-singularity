@@ -498,7 +498,8 @@
 }
 
 .es-glyph--lock,
-.es-glyph--check {
+.es-glyph--check,
+.es-glyph--shield {
   fill: none;
   stroke: currentColor;
   stroke-width: 2;

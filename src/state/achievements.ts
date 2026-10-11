@@ -65,7 +65,7 @@ const RULES: readonly AchievementRule[] = [
   {
     id: 'iron-nerve',
     title: 'Iron Nerve',
-    description: () => 'Clear 5 different levels without losing a ship',
+    description: () => 'Clear 5 levels without losing a ship',
     target: () => 5,
     value: (i) => i.records.flawlessLevels.length,
   },
