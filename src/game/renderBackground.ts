@@ -60,7 +60,7 @@ export function renderBackground(
     skipClear: true,
     width: frame.width,
     height: frame.height,
-    streak: Math.max(computeVictoryT(store, layout), flourishStreak(world, store.status)),
+    streak: Math.max(computeVictoryT(store, layout), flourishStreak(world)),
     offsetX: v.parallaxX,
     offsetY: v.parallaxY,
     lens: { x: hole.x, y: hole.y, radius: hole.radius, strength: 0.35 + revealT * 0.65 },

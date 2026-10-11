@@ -181,7 +181,7 @@ export function GameCanvas() {
       audioEngine.setRumble(frame.holeShake)
 
       // parallax follows the camera's real travel, plus extra rush on streaks
-      const streakScroll = stepFlourish(world, latest.status, latest.shipWorldX, latest.shipLateral, realDt)
+      const streakScroll = stepFlourish(world, latest.shipWorldX, latest.shipLateral, realDt)
       world.visuals.parallaxX +=
         travelled * frame.scale + streakScroll + computeVictoryT(latest, layout) * VICTORY_SCROLL * realDt
       world.visuals.parallaxY += (frame.cameraWorldY - lastCameraY) * frame.scale

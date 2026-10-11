@@ -77,7 +77,7 @@ function drawEngine(input: ShipLayerInputs, x: number, y: number, scale: number,
 export function renderShipLayer(input: ShipLayerInputs): void {
   const { ctx, frame, world, store, layout, sprites, hole, time } = input
   const struggleT = computeStruggleT(store.shipWorldX, layout)
-  let x = frame.shipScreenX + flourishShipOffset(world, store.status, frame.shipScreenX, frame.width)
+  let x = frame.shipScreenX + flourishShipOffset(world, frame.shipScreenX, frame.width)
   let y = toScreenY(frame, store.shipLateral)
   // reads smaller against the hole at the peak of the struggle, selling
   // its true scale, without ever losing the ship

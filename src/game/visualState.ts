@@ -23,7 +23,9 @@ export interface VisualState {
   warpIn: number
   /** the warp-in arrival beat has fired */
   warpArrived: boolean
-  /** seconds since the level was completed: drives the exit flourish */
+  /** the ship has reached the end of the level and is punching out */
+  exiting: boolean
+  /** seconds since the exit began: drives the exit flourish */
   exit: number
   /** the path flown this attempt, worldX/lateral pairs */
   pathX: Float32Array
@@ -53,6 +55,7 @@ export function createVisualState(): VisualState {
     parallaxY: 0,
     warpIn: 0,
     warpArrived: false,
+    exiting: false,
     exit: 0,
     pathX: new Float32Array(GHOST_CAPACITY),
     pathY: new Float32Array(GHOST_CAPACITY),
@@ -85,6 +88,7 @@ export function beginAttempt(v: VisualState, level: number): void {
   v.ribbonCarry = 0
   v.warpIn = 0
   v.warpArrived = false
+  v.exiting = false
   v.exit = 0
   v.smokeCarry = 0
 }
