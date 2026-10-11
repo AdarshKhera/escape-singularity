@@ -30,13 +30,13 @@ export function createNoiseBuffer(ctx: AudioContext, seconds = 1): AudioBuffer {
   return buffer
 }
 
-function envelope(gain: GainNode, t: number, peak: number, attack: number, decay: number) {
+export function envelope(gain: GainNode, t: number, peak: number, attack: number, decay: number) {
   gain.gain.setValueAtTime(0.0001, t)
   gain.gain.exponentialRampToValueAtTime(peak, t + attack)
   gain.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay)
 }
 
-function noiseBurst(
+export function noiseBurst(
   s: SfxContext,
   opts: { type: BiquadFilterType; freq: number; endFreq?: number; q?: number; peak: number; attack: number; decay: number; delay?: number },
 ) {
@@ -56,7 +56,7 @@ function noiseBurst(
   src.stop(t + opts.attack + opts.decay + 0.05)
 }
 
-function tone(
+export function tone(
   s: SfxContext,
   opts: { type: OscillatorType; freq: number; endFreq?: number; peak: number; attack: number; decay: number; delay?: number },
 ) {

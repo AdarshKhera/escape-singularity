@@ -19,6 +19,7 @@ import { beginAttempt } from './visualState'
 import { stepFlourish } from './flourish'
 import { computeVictoryT } from './renderBackground'
 import { clearTutorialPrompt } from './tutorialSystem'
+import { computeMusicTension, jingleForStatus } from './musicCues'
 
 const STAR_COUNT = 360
 // clamp long frames (tab switches, GC pauses) so physics never tunnels
@@ -73,6 +74,7 @@ export function GameCanvas() {
     let animationFrame = 0
     let lastTime = performance.now()
     let lastCameraY = 0
+    let lastStatus = useGameStore.getState().status
 
     // how the attempt ended, so a retry's ghost knows whether to mark a crash
     const trackOutcome = (status: string) => {
@@ -103,6 +105,7 @@ export function GameCanvas() {
       // paused: freeze the frame exactly as it is; silence the hole's rumble
       if (store.paused) {
         audioEngine.setRumble(0)
+        audioEngine.setTension(0)
         if (redrawWhilePaused && lastRender) renderFrame({ ...lastRender, stars, dt: 0 })
         redrawWhilePaused = false
         return
@@ -149,6 +152,12 @@ export function GameCanvas() {
 
       const latest = useGameStore.getState()
       trackOutcome(latest.status)
+      const jingle = jingleForStatus(lastStatus, latest.status)
+      if (jingle) audioEngine.playJingle(jingle)
+      lastStatus = latest.status
+      audioEngine.setTension(
+        computeMusicTension(latest.status, latest.shipWorldX, latest.shipLateral, layout),
+      )
       if (latest.status !== 'playing' && world.tutorial.active) clearTutorialPrompt(world.tutorial)
       const travelled = latest.shipWorldX - store.shipWorldX
       if (dt > 0) frame.cameraVx = travelled / dt
@@ -186,6 +195,7 @@ export function GameCanvas() {
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(animationFrame)
       audioEngine.setRumble(0)
+      audioEngine.setTension(0)
       clearTutorialPrompt(world.tutorial)
     }
   }, [])
