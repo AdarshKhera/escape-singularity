@@ -128,7 +128,7 @@ export function readLivesLostNow(): number | null {
   return Math.max(0, atStart - lives)
 }
 
-// ---- tutorial prompts (contract field, may be absent before the merge) ----
+// ---- tutorial prompts ----
 
 export type TutorialAction = 'steer' | 'thrust' | 'boost' | 'fire' | 'brake'
 
@@ -154,7 +154,7 @@ export function toTutorialPrompt(raw: unknown): TutorialPromptView | null {
 }
 
 function rawTutorialPrompt(state: GameStateSnapshot): unknown {
-  return 'tutorialPrompt' in state ? state.tutorialPrompt : null
+  return state.tutorialPrompt
 }
 
 /** Selects the raw stored object (stable identity) and validates it on read. */

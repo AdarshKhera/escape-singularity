@@ -1,16 +1,10 @@
-import { SHIP_SKINS, type ShipSkin } from '../render/shipSkins'
+import { SHIP_SKINS, type ShipSkin, type ShipStats } from '../render/shipSkins'
 import { displayText } from './levelFormat'
 
-// UI view of the ship roster. Progression fields (stats, role, unlockStars)
-// come from the skin data when present; until then the agreed thresholds and
-// neutral stats stand in, so the hangar works either way.
+// UI view of the ship roster: the skin data plus display formatting, and the
+// unlock rules the hangar and level-complete screen share.
 
-export interface ShipStats {
-  thrust: number
-  handling: number
-  fuel: number
-  armor: number
-}
+export type { ShipStats }
 
 export interface ShipView {
   id: string
@@ -32,58 +26,15 @@ export const STAT_LABELS: Readonly<Record<keyof ShipStats, string>> = {
 export const STAT_MAX = 5
 export const DEFAULT_SHIP_ID = 'scout'
 
-const FALLBACK_UNLOCK_STARS: Readonly<Record<string, number>> = {
-  scout: 0,
-  lancer: 3,
-  halo: 6,
-  vanguard: 10,
-  ember: 14,
-  viper: 18,
-  nova: 24,
-  titan: 30,
-}
-const NEUTRAL_STATS: ShipStats = { thrust: 3, handling: 3, fuel: 3, armor: 3 }
-const FALLBACK_ROLE = 'Balanced'
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null
-}
-
-function rating(value: unknown, fallback: number): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
-  return Math.min(STAT_MAX, Math.max(1, Math.round(value)))
-}
-
-function readStats(raw: unknown): ShipStats {
-  const rec = asRecord(raw)
-  if (!rec) return NEUTRAL_STATS
-  return {
-    thrust: rating(rec.thrust, NEUTRAL_STATS.thrust),
-    handling: rating(rec.handling, NEUTRAL_STATS.handling),
-    fuel: rating(rec.fuel, NEUTRAL_STATS.fuel),
-    armor: rating(rec.armor, NEUTRAL_STATS.armor),
-  }
-}
-
-function readUnlockStars(raw: unknown, id: string): number {
-  if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) return Math.round(raw)
-  return FALLBACK_UNLOCK_STARS[id] ?? 0
-}
-
-function readRole(raw: unknown): string {
-  return typeof raw === 'string' && raw.trim() ? displayText(raw.trim()) : FALLBACK_ROLE
-}
-
 export function toShipView(skin: ShipSkin): ShipView {
-  const extra = asRecord(skin) ?? {}
   return {
     id: skin.id,
     label: skin.label,
     detail: skin.detail.replace(/\s*·\s*/g, ' / '),
     prefix: skin.prefix,
-    role: readRole(extra.role),
-    stats: readStats(extra.stats),
-    unlockStars: skin.id === DEFAULT_SHIP_ID ? 0 : readUnlockStars(extra.unlockStars, skin.id),
+    role: displayText(skin.role),
+    stats: skin.stats,
+    unlockStars: skin.id === DEFAULT_SHIP_ID ? 0 : skin.unlockStars,
   }
 }
 

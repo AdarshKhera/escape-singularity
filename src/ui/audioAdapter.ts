@@ -26,23 +26,7 @@ export function startAudio(): void {
   }
 }
 
-export type UiSound = 'tap' | 'back' | 'toggle' | 'unlock' | 'star' | 'denied'
-
-interface UiSoundEngine {
-  playUi: (kind: UiSound) => void
-}
-
-function hasPlayUi(engine: object): engine is UiSoundEngine {
-  return typeof (engine as Partial<UiSoundEngine>).playUi === 'function'
-}
-
-// Until the engine ships dedicated UI voices, the meaningful moments borrow
-// the closest game effect; plain taps stay silent rather than sound wrong.
-const SFX_STAND_INS: Partial<Record<UiSound, Parameters<typeof audioEngine.playSfx>[0]>> = {
-  denied: 'dryFire',
-  star: 'pickup',
-  unlock: 'slingshot',
-}
+export type UiSound = Parameters<typeof audioEngine.playUi>[0]
 
 /** Wakes the audio context from a menu tap without starting music. */
 export function unlockAudio(): void {
@@ -55,12 +39,7 @@ export function unlockAudio(): void {
 
 export function playUiSound(kind: UiSound): void {
   try {
-    if (hasPlayUi(audioEngine)) {
-      audioEngine.playUi(kind)
-      return
-    }
-    const standIn = SFX_STAND_INS[kind]
-    if (standIn) audioEngine.playSfx(standIn, 0.6)
+    audioEngine.playUi(kind)
   } catch {
     // UI sound is decoration; never let it break a tap
   }

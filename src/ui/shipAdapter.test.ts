@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { SHIP_SKINS } from '../render/shipSkins'
 import { SHIPS, isShipIdUnlocked, nextShipToUnlock, shipsUnlockedBetween, toShipView } from './shipAdapter'
 
 describe('ship progression', () => {
@@ -20,24 +21,21 @@ describe('ship progression', () => {
     expect(nextShipToUnlock(0)?.unlockStars).toBeGreaterThan(0)
   })
 
-  it('reads contract fields when present and clamps ratings', () => {
-    const view = toShipView({
-      id: 'lancer',
-      label: 'Lancer',
-      detail: 'Clean hull · burst engine',
-      prefix: 'lancer',
-      ...{ stats: { thrust: 9, handling: 0, fuel: 2.4, armor: 'x' }, unlockStars: 4, role: 'Interceptor' },
-    })
-    expect(view.stats).toEqual({ thrust: 5, handling: 1, fuel: 2, armor: 3 })
-    expect(view.unlockStars).toBe(4)
-    expect(view.role).toBe('Interceptor')
-    expect(view.detail).toBe('Clean hull / burst engine')
+  it('carries each skin real stats, role and threshold through', () => {
+    for (const skin of SHIP_SKINS) {
+      const view = toShipView(skin)
+      expect(view.stats).toEqual(skin.stats)
+      expect(view.role).toBe(skin.role)
+      expect(view.unlockStars).toBe(skin.unlockStars)
+    }
   })
 
-  it('falls back to agreed thresholds and neutral stats', () => {
-    const view = toShipView({ id: 'nova', label: 'Nova', detail: '', prefix: 'nova' })
-    expect(view.unlockStars).toBe(24)
-    expect(view.role).toBe('Balanced')
-    expect(view.stats).toEqual({ thrust: 3, handling: 3, fuel: 3, armor: 3 })
+  it('formats the detail line and keeps the starter ship free', () => {
+    const scout = SHIP_SKINS.find((s) => s.id === 'scout')
+    expect(scout).toBeDefined()
+    if (!scout) return
+    const view = toShipView({ ...scout, unlockStars: 5 })
+    expect(view.unlockStars).toBe(0)
+    expect(view.detail).toBe('Clean hull / base engine')
   })
 })
