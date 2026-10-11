@@ -484,6 +484,13 @@
   }
 }
 
+@keyframes es-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
 @keyframes es-star-pop {
   0% {
     opacity: 0;

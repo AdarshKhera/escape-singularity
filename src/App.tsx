@@ -3,6 +3,8 @@ import { GameCanvas } from './game/GameCanvas'
 import { useGameStore } from './state/gameStore'
 import { useSettingsStore } from './state/settingsStore'
 import { HUD } from './ui/HUD'
+import { LevelIntro } from './ui/LevelIntro'
+import { CoachMark } from './ui/CoachMark'
 import { MusicBar } from './ui/MusicBar'
 import { IntroLoader } from './ui/IntroLoader'
 import { MainMenu } from './ui/menu/MainMenu'
@@ -92,6 +94,8 @@ function GameView({ touchMode, onQuitToMenu }: GameViewProps) {
     <>
       <GameCanvas />
       <HUD touchMode={touchMode} />
+      <LevelIntro />
+      <CoachMark inputMode={touchMode ? 'touch' : 'keyboard'} />
       {touchMode && flying && <TouchControls />}
       {!touchMode && <MusicBar />}
       <GameOverlays inputMode={touchMode ? 'touch' : 'keyboard'} onQuitToMenu={onQuitToMenu} />

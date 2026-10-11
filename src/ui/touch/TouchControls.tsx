@@ -4,6 +4,7 @@ import { DOUBLE_TAP_WINDOW_MS } from '../../levels/worldConfig'
 import { isDoubleTap, resolveThrottle, type Axis } from '../../input/touchInput'
 import { usePointerHold } from '../../input/usePointerHold'
 import { SteerPad, type SteerPadHandle } from './SteerPad'
+import { useCoachStore } from '../coachStore'
 import './touch.css'
 
 // On-screen controls for touch play: steer pad under the left thumb, thrust,
@@ -17,6 +18,7 @@ export function TouchControls() {
   const requestFire = useGameStore((s) => s.requestFire)
   const hasWeapon = useGameStore((s) => s.hasWeapon)
   const ammo = useGameStore((s) => s.ammo)
+  const coach = useCoachStore((s) => s.highlight)
 
   const thrustRef = useRef(false)
   const brakeRef = useRef(false)
@@ -102,12 +104,12 @@ export function TouchControls() {
   return (
     <div className="es-touch" aria-label="Touch controls">
       <div className="es-touch__left">
-        <SteerPad ref={steerPadRef} onSteer={onSteer} />
+        <SteerPad ref={steerPadRef} onSteer={onSteer} coached={coach === 'steer'} />
       </div>
 
       <div className="es-touch__right">
         {canFire && (
-          <button type="button" className="es-tbtn es-tbtn--fire" onPointerDown={onFire} aria-label={`Fire, ${ammo} rockets`}>
+          <button type="button" className="es-tbtn es-tbtn--fire" data-coach={coach === 'fire'} onPointerDown={onFire} aria-label={`Fire, ${ammo} rockets`}>
             <span className="es-tbtn__label">Fire</span>
             <span className="es-tbtn__count">{ammo}</span>
           </button>
@@ -117,6 +119,7 @@ export function TouchControls() {
             type="button"
             className="es-tbtn es-tbtn--brake"
             data-active={brake.held}
+            data-coach={coach === 'brake'}
             aria-label="Brake"
             {...brake.handlers}
           >
@@ -126,6 +129,7 @@ export function TouchControls() {
             type="button"
             className="es-tbtn es-tbtn--thrust"
             data-active={thrust.held}
+            data-coach={coach === 'thrust' || coach === 'boost'}
             aria-label="Thrust, double tap to boost"
             {...thrust.handlers}
           >

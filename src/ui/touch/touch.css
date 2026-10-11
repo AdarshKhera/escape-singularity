@@ -224,3 +224,28 @@
     transform: scale(0.5);
   }
 }
+
+/* ---------- Coach highlight (tutorial tips) ---------- */
+
+.es-tbtn[data-coach='true']::after,
+.es-steer[data-coach='true'] .es-steer__track::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 2px solid var(--es-gold);
+  box-shadow: 0 0 18px rgba(255, 211, 107, 0.55);
+  pointer-events: none;
+  animation: es-coach-pulse 1.2s ease-out infinite;
+}
+
+@keyframes es-coach-pulse {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}

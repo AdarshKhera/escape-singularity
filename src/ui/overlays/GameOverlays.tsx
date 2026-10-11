@@ -4,7 +4,7 @@ import { MAX_LEVEL } from '../../levels/levels'
 import { levelName } from '../levelFormat'
 import { useLevelResult, useRunStats, withStarFallback } from '../gameStoreAdapters'
 import type { InputMode } from '../ControlsGuide'
-import { restartLevel, setPaused } from '../gameActions'
+import { nextLevel, restartLevel, setPaused } from '../gameActions'
 import { PauseMenu } from './PauseMenu'
 import { GameOverScreen, LifeLostScreen, QuitConfirm } from './EndScreens'
 import { LevelCompleteScreen } from './LevelComplete'
@@ -23,7 +23,6 @@ export function GameOverlays({ inputMode, onQuitToMenu }: GameOverlaysProps) {
   const lives = useGameStore((s) => s.lives)
   const deathCause = useGameStore((s) => s.deathCause)
   const respawn = useGameStore((s) => s.respawn)
-  const advanceLevel = useGameStore((s) => s.advanceLevel)
   const levelResult = useLevelResult()
   const runStats = useRunStats()
   const celebration = useCelebrationStore((s) => s.celebration)
@@ -81,7 +80,7 @@ export function GameOverlays({ inputMode, onQuitToMenu }: GameOverlaysProps) {
         stats={runStats}
         celebration={celebration?.level === level ? celebration : null}
         nextLabel={hasNext ? `Level ${level + 1} · ${levelName(level + 1)}` : null}
-        onNext={advanceLevel}
+        onNext={nextLevel}
         onRetry={() => restartLevel(level)}
         onMenu={quit}
       />
