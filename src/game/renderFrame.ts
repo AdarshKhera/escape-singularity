@@ -39,6 +39,16 @@ export interface RenderInputs {
   dt: number
 }
 
+// the hole's name sits just above it, which is exactly the line a ship
+// escaping over the top flies; it steps aside (fades) when the ship is near
+function labelOpacity(input: RenderInputs, hole: HoleScreen, revealT: number): number {
+  const { frame, store } = input
+  const labelY = hole.y - hole.radius - 34
+  const shipY = toScreenY(frame, store.shipLateral)
+  const near = Math.abs(frame.shipScreenX - hole.x) < 260 ? Math.abs(shipY - labelY) / 70 : 1
+  return Math.min(revealT, 1) * Math.min(Math.max(near, 0.15), 1)
+}
+
 function renderHole(input: RenderInputs, hole: HoleScreen, revealT: number): void {
   const { ctx, layout, time, world } = input
   drawBlackHole(ctx, {
@@ -56,7 +66,7 @@ function renderHole(input: RenderInputs, hole: HoleScreen, revealT: number): voi
     hole.x,
     hole.y,
     hole.radius,
-    Math.min(revealT, 1),
+    labelOpacity(input, hole, revealT),
   )
 }
 

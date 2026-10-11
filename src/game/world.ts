@@ -111,6 +111,8 @@ export interface GameWorld {
   nextSpawnWorldX: number
   nextId: number
   invulnerableTimer: number
+  /** game seconds left of the beat between a fatal hit and the life lost */
+  deathBeat: number
   suckInElapsed: number
   escapeSide: -1 | 1
   prevWorldX: number
@@ -173,6 +175,7 @@ export function createWorld(requestIds: { boost: number; fire: number }): GameWo
     nextSpawnWorldX: FIRST_SPAWN_WORLD_X,
     nextId: 0,
     invulnerableTimer: 0,
+    deathBeat: 0,
     suckInElapsed: 0,
     escapeSide: -1,
     prevWorldX: 0,
@@ -223,6 +226,7 @@ export function resetWorldForRun(world: GameWorld): void {
   resetFeedback(world.feedback)
   world.nextSpawnWorldX = FIRST_SPAWN_WORLD_X
   world.suckInElapsed = 0
+  world.deathBeat = 0
   world.guideFlash = 0
   world.approachArmed = false
   world.lastSegmentHoleX = null

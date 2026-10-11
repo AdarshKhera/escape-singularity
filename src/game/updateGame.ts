@@ -24,6 +24,7 @@ import { emitDamageSmoke, emitThrusters } from './thrusters'
 import { shipTuningFor } from './shipTuning'
 import { updateTutorial } from './tutorialSystem'
 import { recordPath } from './visualState'
+import { stepDeathBeat } from './damage'
 
 // the approach warning fires this far ahead of the pull window opening
 const EARLY_WARNING_LEAD = 2600
@@ -135,6 +136,8 @@ function showIntro(world: GameWorld, level: LevelDefinition) {
 
 export function updatePlaying(world: GameWorld, frame: FrameContext): void {
   const { level, layout, dt } = frame
+  // the ship has been destroyed: the world holds while the wreck burns
+  if (stepDeathBeat(world, dt)) return
   const store = useGameStore.getState()
   const shipWorldX = store.shipWorldX
   const phase = resolvePhase(shipWorldX, layout)

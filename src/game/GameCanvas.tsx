@@ -43,6 +43,8 @@ export function GameCanvas() {
     const { boostRequestId, fireRequestId, level: startLevel } = useGameStore.getState()
     const world = createWorld({ boost: boostRequestId, fire: fireRequestId })
     beginAttempt(world.visuals, startLevel)
+    // dev builds only: inspect the live world from devtools
+    if (import.meta.env.DEV) (globalThis as Record<string, unknown>).__escapeWorld = world
     world.particles.limit = qualitySettings(world.quality).particleBudget
     const frame = createCameraFrame()
     const sprites = loadSprites()
@@ -190,6 +192,18 @@ export function GameCanvas() {
     }
 
     animationFrame = requestAnimationFrame(loop)
+
+    // dev builds only: step the loop by hand at 60 fps, for driving the game
+    // from devtools or automation while the page is hidden (no rAF then)
+    if (import.meta.env.DEV) {
+      ;(globalThis as Record<string, unknown>).__escapeTick = (frames: number) => {
+        for (let i = 0; i < frames; i++) {
+          loop(lastTime + 1000 / 60)
+          cancelAnimationFrame(animationFrame)
+        }
+        animationFrame = requestAnimationFrame(loop)
+      }
+    }
 
     return () => {
       window.removeEventListener('resize', resize)

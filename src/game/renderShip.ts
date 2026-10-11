@@ -98,7 +98,8 @@ export function renderShipLayer(input: ShipLayerInputs): void {
 
   // a ship destroyed by a collision has already gone up in the explosion
   const destroyed =
-    (store.status === 'life-lost' || store.status === 'game-over') && store.deathCause === 'collision'
+    world.deathBeat > 0 ||
+    ((store.status === 'life-lost' || store.status === 'game-over') && store.deathCause === 'collision')
   if (scale <= 0.02 || destroyed || store.status === 'sucked-in') clearRibbon(world.visuals)
   if (scale <= 0.02 || destroyed) return
 
