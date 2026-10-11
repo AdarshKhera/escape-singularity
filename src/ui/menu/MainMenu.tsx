@@ -14,6 +14,7 @@ import { Credits, HowToPlay } from './InfoScreens'
 import { Records } from './Records'
 import { Sheet } from './Sheet'
 import { StarTotal } from './StarTotal'
+import { NewShipBadge, useMarkHangarSeen } from './NewShipBadge'
 import './menu.css'
 
 type MenuScreen = 'home' | 'levels' | 'hangar' | 'records' | 'settings' | 'howto' | 'credits'
@@ -42,11 +43,7 @@ export function MainMenu({ onStartLevel }: MainMenuProps) {
       case 'levels':
         return <LevelSelect onBack={goHome} onSelect={onStartLevel} />
       case 'hangar':
-        return (
-          <Sheet title="Hangar" onBack={goHome} aside={<StarTotal />}>
-            <ShipSelector equippedId={shipSkinId} onEquip={setShipSkinId} />
-          </Sheet>
-        )
+        return <Hangar equippedId={shipSkinId} onEquip={setShipSkinId} onBack={goHome} />
       case 'records':
         return <Records onBack={goHome} />
       case 'settings':
@@ -125,6 +122,7 @@ function Home({ onStartLevel, onNavigate, returnFrom }: HomeProps) {
           </Button>
           <Button data-screen="hangar" onClick={() => onNavigate('hangar')}>
             Hangar
+            <NewShipBadge />
           </Button>
           <Button data-screen="records" onClick={() => onNavigate('records')}>
             Records
@@ -147,5 +145,20 @@ function Home({ onStartLevel, onNavigate, returnFrom }: HomeProps) {
         </span>
       </footer>
     </div>
+  )
+}
+
+interface HangarProps {
+  equippedId: string
+  onEquip: (id: string) => void
+  onBack: () => void
+}
+
+function Hangar({ equippedId, onEquip, onBack }: HangarProps) {
+  useMarkHangarSeen()
+  return (
+    <Sheet title="Hangar" onBack={onBack} aside={<StarTotal />}>
+      <ShipSelector equippedId={equippedId} onEquip={onEquip} />
+    </Sheet>
   )
 }
