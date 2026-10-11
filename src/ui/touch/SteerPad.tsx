@@ -10,12 +10,14 @@ export interface SteerPadHandle {
 
 interface SteerPadProps {
   onSteer: (axis: Axis) => void
+  /** pulse to draw the eye during a tutorial tip */
+  coached?: boolean
 }
 
 // Vertical steer pad for the left thumb. Pressing above the centre steers up,
 // below steers down; sliding the thumb across the centre switches direction
 // without lifting. Pointer capture keeps tracking even off the pad.
-export const SteerPad = forwardRef<SteerPadHandle, SteerPadProps>(function SteerPad({ onSteer }, ref) {
+export const SteerPad = forwardRef<SteerPadHandle, SteerPadProps>(function SteerPad({ onSteer, coached }, ref) {
   const padRef = useRef<HTMLDivElement>(null)
   const pointerRef = useRef<number | null>(null)
   const axisRef = useRef<Axis>(0)
@@ -76,6 +78,7 @@ export const SteerPad = forwardRef<SteerPadHandle, SteerPadProps>(function Steer
       ref={padRef}
       className="es-steer"
       data-active={active}
+      data-coach={coached === true}
       role="slider"
       aria-label="Steer"
       aria-orientation="vertical"

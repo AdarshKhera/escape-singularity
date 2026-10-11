@@ -47,3 +47,21 @@ export function readInt(value: unknown, min: number, max: number, fallback: numb
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
   return Math.min(max, Math.max(min, Math.round(value)))
 }
+
+/** Unique, non-empty strings no longer than maxLength; anything else is dropped. */
+export function readStringList(value: unknown, maxItems: number, maxLength: number): string[] {
+  if (!Array.isArray(value)) return []
+  const strings = value.filter(
+    (item): item is string => typeof item === 'string' && item.length > 0 && item.length <= maxLength,
+  )
+  return [...new Set(strings)].slice(-maxItems)
+}
+
+/** Unique integers within [min, max], sorted ascending. */
+export function readIntSet(value: unknown, min: number, max: number): number[] {
+  if (!Array.isArray(value)) return []
+  const ints = value.filter(
+    (item): item is number => typeof item === 'number' && Number.isInteger(item) && item >= min && item <= max,
+  )
+  return [...new Set(ints)].sort((a, b) => a - b)
+}

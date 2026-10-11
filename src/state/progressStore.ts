@@ -14,11 +14,14 @@ export interface Progress {
   /** best result per level id, keyed by String(id) */
   best: Readonly<Record<string, LevelBest>>
   shipSkinId: string
+  /** star total when the hangar was last opened; newer unlocks get a badge */
+  hangarSeenStars: number
 }
 
 interface ProgressState extends Progress {
   recordLevelComplete: (level: number, stars: number, score: number) => void
   setShipSkinId: (id: string) => void
+  markHangarSeen: (stars: number) => void
   resetProgress: () => void
 }
 
@@ -29,6 +32,7 @@ export const DEFAULT_PROGRESS: Progress = {
   highestUnlocked: 1,
   best: {},
   shipSkinId: SHIP_SKINS[0].id,
+  hangarSeenStars: 0,
 }
 
 function parseBest(raw: unknown): Record<string, LevelBest> {
@@ -56,6 +60,7 @@ export function parseProgress(raw: unknown): Progress {
     highestUnlocked: readInt(raw.highestUnlocked, 1, MAX_LEVEL, 1),
     best: parseBest(raw.best),
     shipSkinId: skinId,
+    hangarSeenStars: readInt(raw.hangarSeenStars, 0, MAX_LEVEL * 3, 0),
   }
 }
 
@@ -67,7 +72,12 @@ export function mergeBest(previous: LevelBest | undefined, stars: number, score:
 }
 
 function pickProgress(s: Progress): Progress {
-  return { highestUnlocked: s.highestUnlocked, best: s.best, shipSkinId: s.shipSkinId }
+  return {
+    highestUnlocked: s.highestUnlocked,
+    best: s.best,
+    shipSkinId: s.shipSkinId,
+    hangarSeenStars: s.hangarSeenStars,
+  }
 }
 
 export const useProgressStore = create<ProgressState>((set) => ({
@@ -80,6 +90,8 @@ export const useProgressStore = create<ProgressState>((set) => ({
     })),
 
   setShipSkinId: (shipSkinId) => set({ shipSkinId }),
+
+  markHangarSeen: (stars) => set((s) => (s.hangarSeenStars === stars ? s : { hangarSeenStars: stars })),
 
   resetProgress: () => {
     removeKey(PROGRESS_KEY)

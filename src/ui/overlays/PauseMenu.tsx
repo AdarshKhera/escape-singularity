@@ -17,12 +17,12 @@ export function PauseMenu({ levelLabel, inputMode, onResume, onRestart, onQuit }
 
   if (showSettings) {
     return (
-      <Overlay label="Settings" width={480}>
+      <Overlay label="Settings" width={640}>
         <div className="es-overlay__title" style={{ fontSize: 18 }}>
           SETTINGS
         </div>
         <SettingsPanel />
-        <Button block onClick={() => setShowSettings(false)}>
+        <Button block data-sound="back" onClick={() => setShowSettings(false)}>
           Back
         </Button>
       </Overlay>

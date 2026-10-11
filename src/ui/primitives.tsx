@@ -1,4 +1,6 @@
 import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { STAR_PATH } from './icons'
+import { starPopDelayMs } from './motion'
 
 type ButtonVariant = 'default' | 'primary' | 'ghost' | 'danger'
 
@@ -117,8 +119,6 @@ export function SettingRow({ name, hint, children }: SettingRowProps) {
   )
 }
 
-const STAR_PATH = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z'
-
 interface StarRowProps {
   stars: number
   size?: number
@@ -133,17 +133,18 @@ export function StarRow({ stars, size = 14, animated }: StarRowProps) {
       role="img"
       aria-label={`${stars} of 3 stars`}
     >
-      {[0, 1, 2].map((i) => (
-        <svg
-          key={i}
-          viewBox="0 0 24 24"
-          className={`es-star${i < stars ? ' es-star--on' : ''}`}
-          style={animated ? { animationDelay: `${250 + i * 220}ms` } : undefined}
-          aria-hidden="true"
-        >
-          <path d={STAR_PATH} />
-        </svg>
-      ))}
+      {[0, 1, 2].map((i) => {
+        const on = i < stars
+        const delay = animated ? { animationDelay: `${starPopDelayMs(i)}ms` } : undefined
+        return (
+          <span key={i} className="es-star-slot">
+            <svg viewBox="0 0 24 24" className={`es-star${on ? ' es-star--on' : ''}`} style={delay} aria-hidden="true">
+              <path d={STAR_PATH} />
+            </svg>
+            {animated && on && <span className="es-star-burst" style={delay} aria-hidden="true" />}
+          </span>
+        )
+      })}
     </span>
   )
 }

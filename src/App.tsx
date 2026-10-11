@@ -3,6 +3,8 @@ import { GameCanvas } from './game/GameCanvas'
 import { useGameStore } from './state/gameStore'
 import { useSettingsStore } from './state/settingsStore'
 import { HUD } from './ui/HUD'
+import { LevelIntro } from './ui/LevelIntro'
+import { CoachMark } from './ui/CoachMark'
 import { MusicBar } from './ui/MusicBar'
 import { IntroLoader } from './ui/IntroLoader'
 import { MainMenu } from './ui/menu/MainMenu'
@@ -13,8 +15,12 @@ import { restartLevel } from './ui/gameActions'
 import { applyAudioSettings, startAudio } from './ui/audioAdapter'
 import { enterImmersiveMode, useIsPortrait, useIsTouchDevice, useSuppressContextMenu, useTouchMode } from './ui/device'
 import { useHaptics } from './ui/haptics'
-import { useAudioSettingsSync, useAutoPause, useProgressRecorder } from './ui/useGameLifecycle'
+import { useAudioSettingsSync, useAutoPause } from './ui/useGameLifecycle'
+import { useRunRecorder } from './ui/useRunRecorder'
 import { useBackGuard } from './ui/useBackGuard'
+import { useMotionAttribute } from './ui/motion'
+import { useUiFeedback } from './ui/useUiFeedback'
+import { useSpatialNav } from './ui/useSpatialNav'
 import './ui/ui.css'
 
 type AppPhase = 'intro' | 'menu' | 'game'
@@ -27,8 +33,11 @@ function App() {
   const blockedByOrientation = touchDevice && portrait
 
   useHaptics()
+  useMotionAttribute()
+  useUiFeedback()
+  useSpatialNav()
   useAudioSettingsSync()
-  useProgressRecorder()
+  useRunRecorder()
   useAutoPause(blockedByOrientation)
   useBackGuard(phase === 'game')
   useSuppressContextMenu(phase === 'game')
@@ -82,13 +91,15 @@ function GameView({ touchMode, onQuitToMenu }: GameViewProps) {
   const flying = (status === 'playing' || status === 'sucked-in') && !paused
 
   return (
-    <>
+    <div className="es-stage" data-input={touchMode ? 'touch' : 'keyboard'}>
       <GameCanvas />
       <HUD touchMode={touchMode} />
+      <LevelIntro />
+      <CoachMark inputMode={touchMode ? 'touch' : 'keyboard'} />
       {touchMode && flying && <TouchControls />}
       {!touchMode && <MusicBar />}
       <GameOverlays inputMode={touchMode ? 'touch' : 'keyboard'} onQuitToMenu={onQuitToMenu} />
-    </>
+    </div>
   )
 }
 

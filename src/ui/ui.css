@@ -88,8 +88,11 @@
 }
 
 .es-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
   background: var(--es-accent-soft);
+  border-color: var(--es-accent);
+  box-shadow: 0 0 16px var(--es-accent-glow);
+  transition-duration: 60ms;
 }
 
 .es-btn:focus-visible {
@@ -118,7 +121,23 @@
 @media (hover: hover) {
   .es-btn--primary:hover {
     background: rgba(63, 214, 255, 0.16);
+    box-shadow:
+      0 0 30px rgba(63, 214, 255, 0.32),
+      inset 0 0 22px rgba(63, 214, 255, 0.12);
   }
+}
+
+.es-btn--primary:active {
+  background: rgba(63, 214, 255, 0.24);
+  box-shadow:
+    0 0 36px rgba(63, 214, 255, 0.45),
+    inset 0 0 26px rgba(63, 214, 255, 0.2);
+}
+
+.es-btn--danger:active {
+  background: rgba(255, 107, 107, 0.12);
+  border-color: var(--es-danger);
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.25);
 }
 
 .es-btn--ghost {
@@ -245,6 +264,8 @@
 .es-actions > .es-btn {
   flex: 1 1 0;
   min-width: 110px;
+  padding: 0 var(--es-space-3);
+  white-space: nowrap;
 }
 
 .es-stack {
@@ -341,9 +362,9 @@
 }
 
 .es-segmented__item {
-  min-width: 52px;
+  min-width: 44px;
   min-height: 34px;
-  padding: 0 var(--es-space-3);
+  padding: 0 10px;
   font-family: var(--es-font-display);
   font-weight: 700;
   font-size: 10px;
@@ -356,9 +377,24 @@
   cursor: pointer;
 }
 
+.es-segmented__item {
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
 .es-segmented__item[aria-checked='true'] {
   color: #001820;
   background: var(--es-accent);
+  box-shadow: 0 0 12px var(--es-accent-glow);
+}
+
+.es-toggle:active::after {
+  width: 26px;
+}
+
+.es-toggle[aria-checked='true']:active::after {
+  transform: translateX(18px);
 }
 
 /* ---------- Stars ---------- */
@@ -381,6 +417,48 @@
 
 .es-stars--animated .es-star--on {
   animation: es-star-pop 520ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.es-star-slot {
+  position: relative;
+  display: inline-flex;
+}
+
+/* eight sparks thrown out as each earned star lands */
+.es-star-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.1em;
+  height: 0.1em;
+  margin: -0.05em 0 0 -0.05em;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 -0.8em 0 0.02em var(--es-gold),
+    0.57em -0.57em 0 0 #fff2c4,
+    0.8em 0 0 0.02em var(--es-gold),
+    0.57em 0.57em 0 0 #fff2c4,
+    0 0.8em 0 0.02em var(--es-gold),
+    -0.57em 0.57em 0 0 #fff2c4,
+    -0.8em 0 0 0.02em var(--es-gold),
+    -0.57em -0.57em 0 0 #fff2c4;
+  opacity: 0;
+  animation: es-star-burst 620ms ease-out both;
+}
+
+@keyframes es-star-burst {
+  0% {
+    opacity: 1;
+    transform: scale(0.3);
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
 }
 
 /* ---------- Keyboard hints ---------- */
@@ -442,6 +520,13 @@
   }
 }
 
+@keyframes es-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
 @keyframes es-star-pop {
   0% {
     opacity: 0;
@@ -459,4 +544,147 @@
   .es-stars--animated .es-star--on {
     animation: none;
   }
+
+  .es-star-burst {
+    display: none;
+  }
+}
+
+/* ---------- Focus ---------- */
+
+.es-app :focus-visible {
+  outline: 2px solid var(--es-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(63, 214, 255, 0.18);
+}
+
+.es-app :focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---------- Reduced motion (OS preference or the in-game setting) ---------- */
+
+:root[data-motion='reduced'] .es-app *,
+:root[data-motion='reduced'] .es-app *::before,
+:root[data-motion='reduced'] .es-app *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0ms !important;
+}
+
+/* ---------- Glyphs ---------- */
+
+.es-glyph {
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+
+.es-glyph--star {
+  fill: var(--es-gold);
+}
+
+.es-glyph--lock,
+.es-glyph--check,
+.es-glyph--shield {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.es-startotal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--es-font-mono);
+  font-size: 12px;
+  color: var(--es-muted);
+}
+
+.es-startotal .es-glyph--star {
+  font-size: 13px;
+  filter: drop-shadow(0 0 5px rgba(255, 211, 107, 0.5));
+}
+
+.es-startotal__value {
+  font-weight: 700;
+  color: var(--es-ink);
+}
+
+/* ---------- Settings ---------- */
+
+.es-settings {
+  text-align: left;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: var(--es-space-2) var(--es-space-6);
+  width: 100%;
+}
+
+.es-settings__group {
+  display: flex;
+  flex-direction: column;
+}
+
+.es-settings__title {
+  padding: 0 var(--es-space-1) var(--es-space-1);
+  color: var(--es-accent);
+  opacity: 0.8;
+}
+
+.es-setting__btn {
+  min-height: 34px;
+  padding: 0 var(--es-space-4);
+  font-size: 10px;
+}
+
+@keyframes es-shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.es-shake {
+  animation: es-shake 320ms ease-in-out;
+}
+
+/* ---------- Stage (menu to game hand-off) ---------- */
+
+.es-stage {
+  position: absolute;
+  inset: 0;
+  animation: es-stage-in 420ms ease-out both;
+}
+
+@keyframes es-stage-in {
+  from {
+    opacity: 0;
+    filter: brightness(1.8) blur(2px);
+  }
+}
+
+/* ---------- Badge ---------- */
+
+.es-badge {
+  padding: 2px 6px;
+  font-family: var(--es-font-display);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #001820;
+  background: var(--es-gold);
+  border-radius: 999px;
+  box-shadow: 0 0 10px rgba(255, 211, 107, 0.5);
+  animation: es-pop-in 360ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }

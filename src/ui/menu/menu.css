@@ -45,8 +45,10 @@
   gap: clamp(4px, 1.4vh, 10px);
 }
 
+/* sized so SINGULARITY always fits the column: the gradient text fill is
+   clipped to the element box, so overflowing letters would vanish */
 .es-home__title {
-  font-size: clamp(24px, min(8.5vh, 6vw), 50px);
+  font-size: clamp(22px, min(8.5vh, calc((min(430px, 58vw) - 60px) / 8.8)), 46px);
 }
 
 .es-home__tagline {
@@ -81,17 +83,25 @@
 
 .es-home__footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  row-gap: 0;
   gap: var(--es-space-3);
   font-size: 10px;
   letter-spacing: 0.12em;
   color: var(--es-faint);
 }
 
+.es-home__footer > span:first-child {
+  white-space: nowrap;
+}
+
 .es-home__footer .es-btn {
   min-height: 32px;
   padding: 0 var(--es-space-2);
-  font-size: 10px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
 }
 
 /* ---------- Sub-screen sheet ---------- */
@@ -130,15 +140,18 @@
 .es-sheet__body {
   flex: 1;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(191, 227, 255, 0.25) transparent;
   overscroll-behavior: contain;
   touch-action: pan-y;
   padding: var(--es-space-2) 2px var(--es-space-2);
   animation: es-rise-in 220ms ease-out;
 }
 
-.es-sheet__narrow {
-  width: min(520px, 100%);
+.es-sheet__content {
+  width: min(720px, 100%);
   margin: 0 auto;
 }
 
@@ -232,90 +245,16 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: var(--es-muted);
-  stroke-width: 2;
+  font-size: 14px;
+  color: var(--es-muted);
 }
 
-/* ---------- Hangar ---------- */
-
-.es-hangar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(16px, 5vw, 48px);
-  height: 100%;
-  flex-wrap: wrap;
-}
-
-.es-hangar__stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 180px;
-}
-
-.es-hangar__preview {
-  width: clamp(88px, 32vh, 150px);
-  height: clamp(88px, 32vh, 150px);
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0 18px rgba(63, 214, 255, 0.25));
-  animation: es-hover 3s ease-in-out infinite;
-}
-
-.es-hangar__name {
+.es-level__next {
   font-family: var(--es-font-display);
-  font-weight: 900;
-  font-size: 16px;
-  letter-spacing: 0.24em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--es-accent);
-}
-
-.es-hangar__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 58px);
-  gap: var(--es-space-2);
-}
-
-.es-hangar__thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-  background: rgba(10, 16, 26, 0.7);
-  border: 1px solid var(--es-line);
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    transform 120ms ease,
-    border-color 160ms ease;
-}
-
-.es-hangar__thumb img {
-  width: 40px;
-  height: 40px;
-  image-rendering: pixelated;
-}
-
-.es-hangar__thumb:active {
-  transform: scale(0.94);
-}
-
-.es-hangar__thumb[aria-checked='true'] {
-  border-color: var(--es-accent);
-  background: rgba(63, 214, 255, 0.12);
-  box-shadow: 0 0 14px rgba(63, 214, 255, 0.2);
-}
-
-@keyframes es-hover {
-  50% {
-    translate: 0 -6px;
-  }
 }
 
 /* ---------- How to play ---------- */
@@ -372,10 +311,50 @@
   }
 }
 
+/* landscape phones: all twelve levels on one screen, no scrolling */
+@media (max-height: 440px) and (min-width: 600px) {
+  .es-levels {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .es-level {
+    min-height: 0;
+    padding: 9px 12px 8px;
+    gap: 2px;
+  }
+
+  .es-level__name,
+  .es-level__sub {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .es-level__foot {
+    padding-top: 2px;
+  }
+
+  .es-level__lock {
+    top: 9px;
+  }
+}
+
 @media (orientation: portrait) {
   .es-home {
     width: 100%;
     justify-content: flex-end;
     padding-bottom: max(32px, var(--es-safe-bottom));
   }
+}
+
+.es-home__links {
+  display: inline-flex;
+  gap: var(--es-space-1);
+  margin-left: auto;
+}
+
+/* sub-view swaps inside a sheet */
+.es-enter {
+  animation: es-rise-in 200ms ease-out;
 }

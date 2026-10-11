@@ -1,9 +1,7 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../state/gameStore'
-import { useProgressStore } from '../state/progressStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { applyAudioSettings } from './audioAdapter'
-import { rawLevelResult, readLevelResultNow, withStarFallback } from './gameStoreAdapters'
 
 function pauseIfRunning() {
   const store = useGameStore.getState()
@@ -33,29 +31,6 @@ export function useAutoPause(hold: boolean): void {
       window.removeEventListener('pagehide', pauseIfRunning)
       window.removeEventListener('blur', pauseIfRunning)
     }
-  }, [])
-}
-
-function recordCurrentClear() {
-  const { level, lives } = useGameStore.getState()
-  const result = withStarFallback(readLevelResultNow(), lives)
-  useProgressStore.getState().recordLevelComplete(level, result.stars, result.score ?? 0)
-}
-
-/**
- * Unlocks the next level and saves best stars/score whenever a level is
- * cleared. Recording is a max-merge, so a levelResult that lands a frame
- * after the status change simply upgrades the saved record.
- */
-export function useProgressRecorder(): void {
-  useEffect(() => {
-    if (useGameStore.getState().status === 'level-complete') recordCurrentClear()
-    return useGameStore.subscribe((state, previous) => {
-      if (state.status !== 'level-complete') return
-      const entered = previous.status !== 'level-complete'
-      const resultChanged = rawLevelResult(state) !== rawLevelResult(previous)
-      if (entered || resultChanged) recordCurrentClear()
-    })
   }, [])
 }
 
