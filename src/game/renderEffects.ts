@@ -4,6 +4,7 @@ import { drawGravityWell } from '../render/drawGravityWell'
 import { drawIonCloud } from '../render/drawIonCloud'
 import { drawEdgeWarning } from '../render/drawEdgeWarning'
 import { computeTopUiMargin } from '../render/cameraScale'
+import { cachedGradient } from '../render/gradientCache'
 import { PARTICLE_COLORS } from './particles'
 import { toScreenX, toScreenY, type CameraFrame } from './camera'
 import type { GameWorld } from './world'
@@ -12,11 +13,22 @@ const PARTICLE_FILLS = PARTICLE_COLORS.map((rgb) => `rgb(${rgb})`)
 const POPUP_SECONDS = 1.1
 const TAU = Math.PI * 2
 
-// Particle sizes are screen pixels; positions are world space.
-export function renderParticles(ctx: CanvasRenderingContext2D, frame: CameraFrame, world: GameWorld): void {
+// Particle sizes are screen pixels; positions are world space. Fast movers
+// are drawn as short streaks along their on-screen velocity (motion blur),
+// which is what sells an explosion's debris; slow ones as squares.
+const STREAK_SECONDS = 0.035
+const MAX_STREAK_PX = 26
+
+export function renderParticles(
+  ctx: CanvasRenderingContext2D,
+  frame: CameraFrame,
+  world: GameWorld,
+  streaks: boolean,
+): void {
   const p = world.particles
   if (p.count === 0) return
   ctx.save()
+  ctx.lineCap = 'round'
   for (let pass = 0; pass < 2; pass++) {
     const glowPass = pass === 1
     ctx.globalCompositeOperation = glowPass ? 'lighter' : 'source-over'
@@ -31,14 +43,32 @@ export function renderParticles(ctx: CanvasRenderingContext2D, frame: CameraFram
       if (p.color[i] !== lastColor) {
         lastColor = p.color[i]
         ctx.fillStyle = PARTICLE_FILLS[lastColor]
+        ctx.strokeStyle = PARTICLE_FILLS[lastColor]
       }
       ctx.globalAlpha = glowPass ? t : Math.min(1, t * 1.6)
+      if (streaks) {
+        // velocity relative to the moving camera, in screen px
+        const vx = (p.vx[i] - frame.cameraVx) * frame.scale * STREAK_SECONDS
+        const vy = p.vy[i] * frame.scale * STREAK_SECONDS
+        const length = Math.hypot(vx, vy)
+        if (length > size * 1.5) {
+          const k = length > MAX_STREAK_PX ? MAX_STREAK_PX / length : 1
+          ctx.lineWidth = size
+          ctx.beginPath()
+          ctx.moveTo(sx - vx * k, sy - vy * k)
+          ctx.lineTo(sx, sy)
+          ctx.stroke()
+          continue
+        }
+      }
       ctx.fillRect(sx - size / 2, sy - size / 2, size, size)
     }
   }
   ctx.restore()
 }
 
+// Shockwave rings stroke an expanding circle; flares are the bright flash at
+// the heart of an explosion, a filled glow that swells and dies fast.
 export function renderRings(ctx: CanvasRenderingContext2D, frame: CameraFrame, world: GameWorld): void {
   if (world.rings.length === 0) return
   ctx.save()
@@ -47,13 +77,37 @@ export function renderRings(ctx: CanvasRenderingContext2D, frame: CameraFrame, w
     const t = (world.simTime - ring.start) / ring.duration
     if (t < 0 || t > 1) continue
     const eased = 1 - (1 - t) * (1 - t)
-    const r = ring.maxRadius * eased * frame.scale
+    const r = Math.max(ring.maxRadius * eased * frame.scale, 1)
+    const x = toScreenX(frame, ring.worldX)
+    const y = toScreenY(frame, ring.worldY)
+    if (ring.flare) {
+      drawFlare(ctx, x, y, Math.max(ring.maxRadius * (0.4 + 0.6 * eased) * frame.scale, 2), ring.rgb, (1 - t) * (1 - t))
+      continue
+    }
     ctx.strokeStyle = `rgba(${ring.rgb}, ${(1 - t) * 0.8})`
     ctx.lineWidth = Math.max(4 * (1 - t), 1)
     ctx.beginPath()
-    ctx.arc(toScreenX(frame, ring.worldX), toScreenY(frame, ring.worldY), Math.max(r, 1), 0, TAU)
+    ctx.arc(x, y, r, 0, TAU)
     ctx.stroke()
   }
+  ctx.restore()
+}
+
+function drawFlare(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, alpha: number) {
+  ctx.save()
+  ctx.globalAlpha = alpha
+  ctx.translate(x, y)
+  ctx.scale(r, r)
+  ctx.fillStyle = cachedGradient(ctx, `flare:${rgb}`, (c) => {
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, 1)
+    g.addColorStop(0, 'rgba(255, 255, 255, 0.95)')
+    g.addColorStop(0.25, `rgba(${rgb}, 0.6)`)
+    g.addColorStop(1, `rgba(${rgb}, 0)`)
+    return g
+  })
+  ctx.beginPath()
+  ctx.arc(0, 0, 1, 0, TAU)
+  ctx.fill()
   ctx.restore()
 }
 

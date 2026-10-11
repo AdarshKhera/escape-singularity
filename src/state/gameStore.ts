@@ -356,3 +356,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ tutorialPrompt: prompt ? { ...prompt, id: tutorialSequence } : null })
   },
 }))
+
+// Dev builds only: expose the store for driving the game from devtools
+// (jump to a hole, set lives, inspect state). Stripped from production.
+if (import.meta.env.DEV) {
+  ;(globalThis as Record<string, unknown>).__escapeStore = useGameStore
+}

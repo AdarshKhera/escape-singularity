@@ -4,6 +4,9 @@
 
 import { createFeedback, resetFeedback, type Feedback } from './feedback'
 import { ParticlePool } from './particles'
+import { createQualityMonitor, type QualityMonitor } from './quality'
+import { createVisualState, type VisualState } from './visualState'
+import { createTutorialState, type TutorialState } from './tutorialSystem'
 
 export type ObstacleType =
   | 'asteroid'
@@ -58,6 +61,8 @@ export interface Ring {
   /** world units at the end of the expansion */
   maxRadius: number
   rgb: string
+  /** a filled glow (an explosion's flash) rather than a shockwave line */
+  flare?: boolean
 }
 
 export interface Popup {
@@ -143,6 +148,12 @@ export interface GameWorld {
   thrusterCarry: number
   /** last frame's camera scale (screen px per world unit), for screen-sized effects */
   viewScale: number
+  /** cosmetic state: engine ribbon, parallax, flourishes, ghost path */
+  visuals: VisualState
+  /** adaptive effects budget, driven by measured frame times */
+  quality: QualityMonitor
+  /** which coaching prompts have shown, and the one on screen */
+  tutorial: TutorialState
 }
 
 // Request ids are monotonic in the store and survive a quit to menu, so a
@@ -193,6 +204,9 @@ export function createWorld(requestIds: { boost: number; fire: number }): GameWo
     runTimePushedMs: 0,
     thrusterCarry: 0,
     viewScale: 0.62,
+    visuals: createVisualState(),
+    quality: createQualityMonitor(),
+    tutorial: createTutorialState(),
   }
 }
 

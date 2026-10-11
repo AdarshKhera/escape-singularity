@@ -50,6 +50,8 @@ export interface CameraFrame {
   shipSpeed: number
   /** fraction of the width the ship sits at; resolved once per viewport */
   shipXRatio: number
+  /** how fast the camera is actually travelling, world units/s */
+  cameraVx: number
 }
 
 export function createCameraFrame(): CameraFrame {
@@ -65,6 +67,7 @@ export function createCameraFrame(): CameraFrame {
     boostIntensity: 0,
     shipSpeed: 0,
     shipXRatio: shipScreenXRatio(),
+    cameraVx: 0,
   }
 }
 

@@ -12,7 +12,7 @@ import {
 } from '../levels/worldConfig'
 import type { HoleSegment, LevelDefinition } from '../levels/levels'
 import type { GameWorld } from './world'
-import { computeFuelDrainRate, stepShip, type ShipControls } from './shipStep'
+import { computeFuelDrainRate, shipMaxSpeed, stepShip, type ShipControls } from './shipStep'
 import { runSpawners } from './spawnSystem'
 import { resolveObstacleCollisions } from './collisionSystem'
 import { handleFireRequest, stepProjectiles } from './combatSystem'
@@ -20,8 +20,10 @@ import { updateHazards } from './hazardSystem'
 import { SLINGSHOT_SPEED, updatePlanets } from './planetSystem'
 import { computeSkimBonus } from './scoring'
 import { onBoost, onEscape, onFuelCache, showEventBanner } from './gameEvents'
-import { emitThrusters } from './thrusters'
+import { emitDamageSmoke, emitThrusters } from './thrusters'
 import { shipTuningFor } from './shipTuning'
+import { updateTutorial } from './tutorialSystem'
+import { recordPath } from './visualState'
 
 // the approach warning fires this far ahead of the pull window opening
 const EARLY_WARNING_LEAD = 2600
@@ -164,7 +166,8 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
     pickupBoosting: world.pickupBoostTimer > 0,
     extraSpeed: world.slingshotTimer > 0 ? SLINGSHOT_SPEED : 0,
   }
-  const env = { level, layout, phase, time, tuning: shipTuningFor(store.shipSkinId) }
+  const tuning = shipTuningFor(store.shipSkinId)
+  const env = { level, layout, phase, time, tuning }
   const drainRate = computeFuelDrainRate(controls, env, ship)
   if (drainRate > 0 && store.fuel > 0) store.drainFuel(drainRate * dt)
 
@@ -177,6 +180,22 @@ export function updatePlaying(world: GameWorld, frame: FrameContext): void {
   updateInvulnerability(world, dt)
   updateRunClock(world, dt)
   emitThrusters(world, next, controls, phase, dt)
+  emitDamageSmoke(world, next, store.lives, dt)
+  recordPath(world.visuals, next.worldX, next.lateral)
+  updateTutorial(
+    world.tutorial,
+    {
+      level: level.id,
+      phase,
+      shipWorldX: next.worldX,
+      speedRatio: next.forwardSpeed / shipMaxSpeed(tuning),
+      attemptSeconds: world.visuals.warpIn,
+      approachWarned: world.guideFlash > 0,
+      boostReady: world.boostTimer <= 0 && world.boostCooldown <= 0,
+      boosting: world.boostTimer > 0,
+    },
+    dt,
+  )
   runSpawners(world, level, frame.segments, next.worldX, useGameStore.getState().fuel / FUEL_MAX)
   updateHazards(world, level, next.worldX, next.lateral, dt)
   updatePlanets(world, level, layout.blackHoleX, next.worldX, next.lateral, time)

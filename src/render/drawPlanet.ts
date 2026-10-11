@@ -63,7 +63,9 @@ export function drawPlanet(
   if (!sprite.complete || sprite.naturalWidth === 0) return
 
   const size = radius * 2
+  drawAtmosphere(ctx, x, y, radius)
   ctx.drawImage(sprite, x - size / 2, y - size / 2, size, size)
+  drawLighting(ctx, x, y, radius)
 
   if (rogue) {
     ctx.save()
@@ -74,4 +76,57 @@ export function drawPlanet(
     ctx.stroke()
     ctx.restore()
   }
+}
+
+// A thin atmospheric halo just outside the limb.
+function drawAtmosphere(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) {
+  if (radius < 4) return
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.translate(x, y)
+  ctx.scale(radius, radius)
+  ctx.fillStyle = cachedGradient(ctx, 'planet:atmosphere', (c) => {
+    const g = c.createRadialGradient(0, 0, 0.92, 0, 0, 1.14)
+    g.addColorStop(0, 'rgba(170, 210, 255, 0)')
+    g.addColorStop(0.35, 'rgba(170, 210, 255, 0.22)')
+    g.addColorStop(1, 'rgba(170, 210, 255, 0)')
+    return g
+  })
+  ctx.beginPath()
+  ctx.arc(0, 0, 1.14, 0, TAU)
+  ctx.fill()
+  ctx.restore()
+}
+
+// Every world is lit by the hole's accretion disk, which always lies ahead
+// (to the right): a warm rim on that limb and the night side falling away
+// into shadow behind it.
+function drawLighting(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) {
+  if (radius < 4) return
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(radius, radius)
+  ctx.beginPath()
+  ctx.arc(0, 0, 1, 0, TAU)
+  ctx.clip()
+  ctx.fillStyle = cachedGradient(ctx, 'planet:night', (c) => {
+    const g = c.createRadialGradient(0.75, -0.15, 0.5, 0.75, -0.15, 2.05)
+    g.addColorStop(0, 'rgba(0, 0, 0, 0)')
+    g.addColorStop(0.55, 'rgba(0, 0, 0, 0.22)')
+    g.addColorStop(1, 'rgba(0, 0, 0, 0.55)')
+    return g
+  })
+  ctx.fillRect(-1, -1, 2, 2)
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.strokeStyle = cachedGradient(ctx, 'planet:rim', (c) => {
+    const g = c.createLinearGradient(0.2, 0, 1, 0)
+    g.addColorStop(0, 'rgba(255, 214, 170, 0)')
+    g.addColorStop(1, 'rgba(255, 224, 190, 0.75)')
+    return g
+  })
+  ctx.lineWidth = 0.09
+  ctx.beginPath()
+  ctx.arc(0, 0, 0.97, -1.15, 1.15)
+  ctx.stroke()
+  ctx.restore()
 }

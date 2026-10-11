@@ -42,3 +42,47 @@ export function emitThrusters(
     )
   }
 }
+
+// A wounded hull trails smoke (and, on its last life, the odd spark), so
+// the damage reads at a glance without looking at the HUD.
+const SMOKE_RATE_BY_LIVES = [0, 22, 9]
+
+export function emitDamageSmoke(
+  world: GameWorld,
+  ship: ShipKinematics,
+  lives: number,
+  dt: number,
+): void {
+  const rate = lives >= 0 && lives < SMOKE_RATE_BY_LIVES.length ? SMOKE_RATE_BY_LIVES[lives] : 0
+  if (rate <= 0 || dt <= 0) return
+  const scale = Math.max(world.viewScale, 0.02)
+  world.visuals.smokeCarry += rate * dt
+  while (world.visuals.smokeCarry >= 1) {
+    world.visuals.smokeCarry -= 1
+    const x = ship.worldX - (6 + Math.random() * 8) / scale
+    const y = ship.lateral + (Math.random() - 0.5) * (10 / scale)
+    world.particles.spawn(
+      x,
+      y,
+      ship.forwardSpeed - (60 + Math.random() * 60) / scale,
+      ship.lateralVelocity * 0.3 + ((Math.random() - 0.5) * 50) / scale,
+      0.5 + Math.random() * 0.5,
+      2.6 + Math.random() * 2.6,
+      PC.smoke,
+      1.2,
+      false,
+    )
+    if (lives === 1 && Math.random() < 0.18) {
+      world.particles.spawn(
+        x,
+        y,
+        ship.forwardSpeed + ((Math.random() - 0.5) * 300) / scale,
+        ((Math.random() - 0.5) * 300) / scale,
+        0.25,
+        1.8,
+        PC.spark,
+        2,
+      )
+    }
+  }
+}
