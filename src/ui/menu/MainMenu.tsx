@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useScreenTransition } from '../useScreenTransition'
 import { MAX_LEVEL } from '../../levels/levels'
 import { useProgressStore } from '../../state/progressStore'
@@ -95,11 +95,10 @@ function Home({ onStartLevel, onNavigate, returnFrom }: HomeProps) {
   return (
     <div ref={rootRef} className="es-home">
       <div className="es-home__brand">
-        <span className="es-eyebrow">Arehk Games</span>
+        <span className="es-eyebrow es-home__eyebrow">Arehk Games</span>
         <h1 className="es-title es-home__title">
-          ESCAPE
-          <br />
-          SINGULARITY
+          <span className="es-home__title-top">ESCAPE</span>
+          <span>SINGULARITY</span>
         </h1>
         <p className="es-home__tagline">Turn away early, or the black hole keeps you.</p>
       </div>
@@ -118,19 +117,10 @@ function Home({ onStartLevel, onNavigate, returnFrom }: HomeProps) {
           </span>
         </Button>
         <div className="es-home__grid">
-          <Button data-screen="levels" onClick={() => onNavigate('levels')}>
-            Levels
-          </Button>
-          <Button data-screen="hangar" onClick={() => onNavigate('hangar')}>
-            Hangar
-            <NewShipBadge />
-          </Button>
-          <Button data-screen="records" onClick={() => onNavigate('records')}>
-            Records
-          </Button>
-          <Button data-screen="settings" onClick={() => onNavigate('settings')}>
-            Settings
-          </Button>
+          <NavItem index="01" screen="levels" label="Levels" onNavigate={onNavigate} />
+          <NavItem index="02" screen="hangar" label="Hangar" onNavigate={onNavigate} badge={<NewShipBadge />} />
+          <NavItem index="03" screen="records" label="Records" onNavigate={onNavigate} />
+          <NavItem index="04" screen="settings" label="Settings" onNavigate={onNavigate} />
         </div>
       </nav>
 
@@ -146,6 +136,29 @@ function Home({ onStartLevel, onNavigate, returnFrom }: HomeProps) {
         </span>
       </footer>
     </div>
+  )
+}
+
+interface NavItemProps {
+  index: string
+  screen: MenuScreen
+  label: string
+  badge?: ReactNode
+  onNavigate: (screen: MenuScreen) => void
+}
+
+function NavItem({ index, screen, label, badge, onNavigate }: NavItemProps) {
+  return (
+    <button type="button" className="es-home__item" data-screen={screen} onClick={() => onNavigate(screen)}>
+      <span className="es-home__idx">{index}</span>
+      <span className="es-home__label">
+        {label}
+        {badge}
+      </span>
+      <span className="es-home__arrow" aria-hidden="true">
+        →
+      </span>
+    </button>
   )
 }
 

@@ -19,7 +19,7 @@ export function drawPlanetLabel(
   ctx.globalAlpha = opacity
 
   // leader line from the planet edge
-  ctx.strokeStyle = 'rgba(191,227,255,0.35)'
+  ctx.strokeStyle = 'rgba(222, 227, 235,0.35)'
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(screenX + screenRadius + 2, anchorY)
@@ -33,11 +33,11 @@ export function drawPlanetLabel(
   ctx.font = '600 12px monospace'
   ctx.fillText(planet.name.toUpperCase(), anchorX, anchorY - 14)
 
-  ctx.fillStyle = 'rgba(63,214,255,0.75)'
+  ctx.fillStyle = 'rgba(61, 232, 255,0.75)'
   ctx.font = '9px monospace'
   ctx.fillText(planet.designation, anchorX, anchorY - 1)
 
-  ctx.fillStyle = 'rgba(191,227,255,0.6)'
+  ctx.fillStyle = 'rgba(222, 227, 235,0.6)'
   ctx.font = '9px monospace'
   ctx.fillText(`GRAVITY ${planet.gravity}`, anchorX, anchorY + 11)
   ctx.fillText(planet.note, anchorX, anchorY + 23)

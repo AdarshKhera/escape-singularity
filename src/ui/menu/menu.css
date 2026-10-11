@@ -35,7 +35,7 @@
   flex-direction: column;
   justify-content: center;
   gap: clamp(10px, 3.4vh, 26px);
-  width: min(430px, 58vw);
+  width: min(460px, 58vw);
   padding: max(16px, var(--es-safe-top)) 24px max(12px, var(--es-safe-bottom)) max(28px, calc(var(--es-safe-left) + 16px));
 }
 
@@ -48,7 +48,31 @@
 /* sized so SINGULARITY always fits the column: the gradient text fill is
    clipped to the element box, so overflowing letters would vanish */
 .es-home__title {
-  font-size: clamp(22px, min(8.5vh, calc((min(430px, 58vw) - 60px) / 8.8)), 46px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: clamp(24px, min(9.5vh, calc((min(460px, 58vw) - 40px) / 8.4)), 54px);
+}
+
+/* the first word is a quiet lead-in; the second carries the weight */
+.es-home__title-top {
+  font-size: 0.42em;
+  font-weight: 400;
+  letter-spacing: 0.7em;
+}
+
+.es-home__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.es-home__eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: var(--es-accent);
+  box-shadow: 0 0 8px rgba(61, 232, 255, 0.7);
 }
 
 .es-home__tagline {
@@ -65,14 +89,78 @@
 .es-home__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--es-space-2);
+  column-gap: var(--es-space-5);
+  margin-top: var(--es-space-1);
 }
 
-.es-home__grid .es-btn {
-  min-height: clamp(38px, 11vh, 46px);
+/* quiet numbered rows with a hairline, in place of a grid of boxed buttons */
+.es-home__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: clamp(36px, 10vh, 44px);
+  padding: 0 2px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--es-line);
+  color: var(--es-ink-soft);
+  font-family: var(--es-font-display);
+  font-weight: 600;
   font-size: 11px;
-  letter-spacing: 0.16em;
-  padding: 0 var(--es-space-3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 140ms ease, border-color 140ms ease, padding 140ms ease;
+}
+
+.es-home__idx {
+  font-family: var(--es-font-mono);
+  font-weight: 500;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--es-faint);
+  transition: color 140ms ease;
+}
+
+.es-home__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.es-home__arrow {
+  opacity: 0;
+  transform: translateX(-6px);
+  color: var(--es-accent);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+@media (hover: hover) {
+  .es-home__item:hover {
+    color: var(--es-ink);
+    border-color: var(--es-accent);
+  }
+
+  .es-home__item:hover .es-home__idx {
+    color: var(--es-accent);
+  }
+
+  .es-home__item:hover .es-home__arrow {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.es-home__item:active {
+  color: var(--es-accent);
+}
+
+.es-home__item:focus-visible {
+  outline: 2px solid var(--es-accent);
+  outline-offset: 2px;
 }
 
 .es-home__play {
@@ -143,7 +231,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(191, 227, 255, 0.25) transparent;
+  scrollbar-color: rgba(222, 227, 235, 0.25) transparent;
   overscroll-behavior: contain;
   touch-action: pan-y;
   padding: var(--es-space-2) 2px var(--es-space-2);
@@ -173,7 +261,7 @@
   padding: var(--es-space-3);
   text-align: left;
   color: var(--es-ink);
-  background: linear-gradient(160deg, rgba(20, 30, 48, 0.85), rgba(8, 12, 20, 0.85));
+  background: linear-gradient(160deg, rgba(20, 30, 48, 0.85), rgba(11, 12, 15, 0.85));
   border: 1px solid var(--es-line);
   border-radius: 8px;
   cursor: pointer;
@@ -198,8 +286,8 @@
 }
 
 .es-level--current {
-  border-color: rgba(63, 214, 255, 0.6);
-  box-shadow: 0 0 18px rgba(63, 214, 255, 0.15);
+  border-color: rgba(61, 232, 255, 0.6);
+  box-shadow: 0 0 18px rgba(61, 232, 255, 0.15);
 }
 
 .es-level:disabled {

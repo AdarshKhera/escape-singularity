@@ -1,22 +1,22 @@
 /* Global shell: a fixed, non-scrolling, non-zooming game surface. */
 
 :root {
-  --es-bg: #000;
-  --es-ink: #e8ecf5;
-  --es-ink-soft: #bfe3ff;
-  --es-muted: rgba(232, 236, 245, 0.55);
-  --es-faint: rgba(232, 236, 245, 0.32);
-  --es-accent: #3fd6ff;
-  --es-accent-soft: rgba(63, 214, 255, 0.1);
-  --es-accent-glow: rgba(63, 214, 255, 0.22);
+  --es-bg: #050506;
+  --es-ink: #e7e9ee;
+  --es-ink-soft: #c9ced6;
+  --es-muted: rgba(231, 233, 238, 0.56);
+  --es-faint: rgba(231, 233, 238, 0.32);
+  --es-accent: #3de8ff;
+  --es-accent-soft: rgba(61, 232, 255, 0.1);
+  --es-accent-glow: rgba(61, 232, 255, 0.22);
   --es-warm: #ffb37a;
   --es-danger: #ff6b6b;
   --es-gold: #ffd36b;
-  --es-line: rgba(191, 227, 255, 0.16);
-  --es-line-strong: rgba(191, 227, 255, 0.32);
-  --es-panel: linear-gradient(180deg, rgba(14, 20, 32, 0.86), rgba(8, 11, 18, 0.8));
+  --es-line: rgba(222, 227, 235, 0.16);
+  --es-line-strong: rgba(222, 227, 235, 0.32);
+  --es-panel: linear-gradient(180deg, rgba(22, 24, 28, 0.86), rgba(10, 11, 13, 0.8));
 
-  --es-font-display: 'Orbitron', sans-serif;
+  --es-font-display: 'Space Grotesk', system-ui, sans-serif;
   --es-font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --es-space-1: 4px;

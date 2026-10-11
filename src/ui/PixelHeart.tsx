@@ -3,41 +3,28 @@ interface PixelHeartProps {
   size?: number
 }
 
-// An 8x7 pixel-art heart, drawn as a blocky SVG grid rather than a smooth
-// vector shape, to match the game's pixel-art asset pack.
-const HEART_ROWS = [
-  '.11.11.',
-  '1111111',
-  '1111111',
-  '1111111',
-  '.11111.',
-  '..111..',
-  '...1...',
-]
+// A clean vector heart: neon rose when it is a life you still have, a faint
+// outline when it is spent. (Kept under its original name so callers don't
+// change; it is no longer pixel art.)
+const HEART_PATH =
+  'M12 21.2 3.9 13.1A5.2 5.2 0 0 1 11.2 5.7L12 6.5l.8-.8a5.2 5.2 0 0 1 7.3 7.4Z'
 
 export function PixelHeart({ filled, size = 16 }: PixelHeartProps) {
-  const fillColor = filled ? '#ff5d7a' : 'transparent'
-  const strokeColor = filled ? '#ff8fa3' : 'rgba(232,236,245,0.25)'
-
   return (
-    <svg width={size} height={size} viewBox={`0 0 7 7`} shapeRendering="crispEdges">
-      {HEART_ROWS.map((row, y) =>
-        row.split('').map((cellValue, x) => {
-          if (cellValue === '.') return null
-          return (
-            <rect
-              key={`${x}-${y}`}
-              x={x}
-              y={y}
-              width={1}
-              height={1}
-              fill={fillColor}
-              stroke={strokeColor}
-              strokeWidth={0.06}
-            />
-          )
-        }),
-      )}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      style={filled ? { filter: 'drop-shadow(0 0 4px rgba(255, 92, 140, 0.55))' } : undefined}
+    >
+      <path
+        d={HEART_PATH}
+        fill={filled ? '#ff5c8c' : 'transparent'}
+        stroke={filled ? '#ffa3bd' : 'rgba(231, 233, 238, 0.28)'}
+        strokeWidth={1.6}
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }

@@ -36,7 +36,7 @@ export function drawSpeedLines(
 
   ctx.save()
   ctx.globalAlpha = intensity * 0.16
-  ctx.strokeStyle = '#bfe3ff'
+  ctx.strokeStyle = '#c9ced6'
   ctx.lineWidth = 1
 
   for (const line of lines) {

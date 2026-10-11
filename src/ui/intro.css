@@ -1,0 +1,124 @@
+/* Boot screen: the hole rises over the horizon while the ship arcs past it. */
+
+.es-intro-screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--es-bg);
+  color: var(--es-ink);
+  transition: opacity 520ms ease;
+}
+
+.es-intro-screen[data-leaving='true'] {
+  opacity: 0;
+}
+
+.es-intro-screen canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.es-boot__studio {
+  position: absolute;
+  top: max(26px, calc(var(--es-safe-top) + 18px));
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--es-font-display);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.7em;
+  text-indent: 0.7em;
+  text-transform: uppercase;
+  color: #9aa1ac;
+  opacity: 0;
+  animation: es-boot-rise 900ms ease-out 250ms forwards;
+}
+
+.es-boot__title {
+  position: absolute;
+  left: max(28px, calc(var(--es-safe-left) + 20px));
+  bottom: clamp(70px, 20vh, 150px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  animation: es-boot-rise 1100ms ease-out 1500ms forwards;
+}
+
+.es-boot__title span:first-child {
+  font-family: var(--es-font-display);
+  font-weight: 400;
+  font-size: clamp(12px, 3.2vh, 20px);
+  letter-spacing: 0.7em;
+  color: var(--es-ink-soft);
+}
+
+.es-boot__title span:last-child {
+  font-family: var(--es-font-display);
+  font-weight: 600;
+  font-size: clamp(26px, min(9.5vh, 6.2vw), 62px);
+  letter-spacing: 0.14em;
+  line-height: 1;
+  background: linear-gradient(180deg, #ffffff 0%, #d6dae1 55%, #8d94a0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.es-boot__bar {
+  position: absolute;
+  left: max(28px, calc(var(--es-safe-left) + 20px));
+  right: max(28px, calc(var(--es-safe-right) + 20px));
+  bottom: max(26px, calc(var(--es-safe-bottom) + 18px));
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--es-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--es-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.es-boot__track {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  background: rgba(222, 227, 235, 0.16);
+}
+
+.es-boot__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--es-accent);
+  box-shadow: 0 0 10px rgba(61, 232, 255, 0.7);
+  transition: width 200ms linear;
+}
+
+.es-boot__skip {
+  color: var(--es-muted);
+}
+
+@keyframes es-boot-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .es-boot__studio,
+  .es-boot__title {
+    animation: none;
+    opacity: 1;
+  }
+}
