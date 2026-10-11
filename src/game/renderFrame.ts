@@ -85,13 +85,15 @@ export function renderFrame(input: RenderInputs): void {
   // the world layer shakes; full-screen overlays below do not
   ctx.save()
   ctx.translate(world.feedback.shakeX, world.feedback.shakeY)
+  // the hole (and its bright disk) sits behind everything solid, so no
+  // hazard can ever hide in its glow
+  renderHole(input, hole, revealT)
   renderFields(ctx, frame, level, time, store.shipLateral)
   renderGhost(ctx, frame, world)
   renderPlanets(ctx, frame, level, layout, sprites, time, store.shipLateral)
   renderFuelCache(ctx, frame, world, layout, time)
   renderObstacles(ctx, frame, world, sprites, time)
   renderProjectiles(ctx, frame, world, sprites)
-  renderHole(input, hole, revealT)
   renderParticles(ctx, frame, world, qualitySettings(world.quality).particleStreaks)
   renderShipLayer({ ctx, frame, world, store, layout, sprites, hole, time, dt })
   renderRings(ctx, frame, world)

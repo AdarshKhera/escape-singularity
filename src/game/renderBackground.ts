@@ -63,7 +63,8 @@ export function renderBackground(
     streak: Math.max(computeVictoryT(store, layout), flourishStreak(world)),
     offsetX: v.parallaxX,
     offsetY: v.parallaxY,
-    lens: { x: hole.x, y: hole.y, radius: hole.radius, strength: 0.35 + revealT * 0.65 },
+    // the bend only starts once the hole is actually looming
+    lens: { x: hole.x, y: hole.y, radius: hole.radius, strength: revealT > 0 ? 0.25 + revealT * 0.75 : 0 },
   })
 
   drawVoidDarkness(ctx, {
