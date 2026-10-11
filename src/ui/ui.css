@@ -88,8 +88,11 @@
 }
 
 .es-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
   background: var(--es-accent-soft);
+  border-color: var(--es-accent);
+  box-shadow: 0 0 16px var(--es-accent-glow);
+  transition-duration: 60ms;
 }
 
 .es-btn:focus-visible {
@@ -118,7 +121,23 @@
 @media (hover: hover) {
   .es-btn--primary:hover {
     background: rgba(63, 214, 255, 0.16);
+    box-shadow:
+      0 0 30px rgba(63, 214, 255, 0.32),
+      inset 0 0 22px rgba(63, 214, 255, 0.12);
   }
+}
+
+.es-btn--primary:active {
+  background: rgba(63, 214, 255, 0.24);
+  box-shadow:
+    0 0 36px rgba(63, 214, 255, 0.45),
+    inset 0 0 26px rgba(63, 214, 255, 0.2);
+}
+
+.es-btn--danger:active {
+  background: rgba(255, 107, 107, 0.12);
+  border-color: var(--es-danger);
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.25);
 }
 
 .es-btn--ghost {
@@ -356,9 +375,24 @@
   cursor: pointer;
 }
 
+.es-segmented__item {
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
 .es-segmented__item[aria-checked='true'] {
   color: #001820;
   background: var(--es-accent);
+  box-shadow: 0 0 12px var(--es-accent-glow);
+}
+
+.es-toggle:active::after {
+  width: 26px;
+}
+
+.es-toggle[aria-checked='true']:active::after {
+  transform: translateX(18px);
 }
 
 /* ---------- Stars ---------- */
@@ -618,4 +652,19 @@
 
 .es-shake {
   animation: es-shake 320ms ease-in-out;
+}
+
+/* ---------- Stage (menu to game hand-off) ---------- */
+
+.es-stage {
+  position: absolute;
+  inset: 0;
+  animation: es-stage-in 420ms ease-out both;
+}
+
+@keyframes es-stage-in {
+  from {
+    opacity: 0;
+    filter: brightness(1.8) blur(2px);
+  }
 }

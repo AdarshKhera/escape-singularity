@@ -35,16 +35,41 @@ function isVisible(el: HTMLElement): boolean {
   return rect.width > 0 && rect.height > 0
 }
 
+/** Gap between two 1D intervals; 0 when they overlap. */
+function intervalGap(a1: number, a2: number, b1: number, b2: number): number {
+  return Math.max(0, b1 - a2, a1 - b2)
+}
+
+/** Edge distance from `from` to `to` in `dir`; negative when `to` is not past that edge. */
+function edgeDistance(from: DOMRect, to: DOMRect, dir: Direction): number {
+  switch (dir) {
+    case 'right':
+      return to.left - from.right
+    case 'left':
+      return from.left - to.right
+    case 'down':
+      return to.top - from.bottom
+    case 'up':
+      return from.top - to.bottom
+  }
+}
+
 /** Distance score toward `dir`; null when the candidate is not that way. */
 function directionalScore(from: DOMRect, to: DOMRect, dir: Direction): number | null {
+  const along = edgeDistance(from, to, dir)
+  if (along < -4) return null
+  const horizontal = dir === 'left' || dir === 'right'
+  const across = horizontal
+    ? intervalGap(from.top, from.bottom, to.top, to.bottom)
+    : intervalGap(from.left, from.right, to.left, to.right)
   const a = center(from)
   const b = center(to)
-  const dx = b.x - a.x
-  const dy = b.y - a.y
-  const along = dir === 'left' ? -dx : dir === 'right' ? dx : dir === 'up' ? -dy : dy
-  const across = dir === 'left' || dir === 'right' ? Math.abs(dy) : Math.abs(dx)
-  if (along <= 4) return null
-  return along + across * 2.5
+  const offset = horizontal ? Math.abs(b.y - a.y) : Math.abs(b.x - a.x)
+  const forward = Math.max(0, along)
+  // a control that is mostly sideways is not "that way"; stay put instead
+  if (across > forward * 1.5 + 4) return null
+  // rounded so near-ties fall back to reading order
+  return Math.round(forward + across * 3 + offset * 0.1)
 }
 
 export function nextFocusTarget(

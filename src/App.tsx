@@ -91,7 +91,7 @@ function GameView({ touchMode, onQuitToMenu }: GameViewProps) {
   const flying = (status === 'playing' || status === 'sucked-in') && !paused
 
   return (
-    <>
+    <div className="es-stage">
       <GameCanvas />
       <HUD touchMode={touchMode} />
       <LevelIntro />
@@ -99,7 +99,7 @@ function GameView({ touchMode, onQuitToMenu }: GameViewProps) {
       {touchMode && flying && <TouchControls />}
       {!touchMode && <MusicBar />}
       <GameOverlays inputMode={touchMode ? 'touch' : 'keyboard'} onQuitToMenu={onQuitToMenu} />
-    </>
+    </div>
   )
 }
 
