@@ -3,6 +3,8 @@ import { useProgressStore } from '../../state/progressStore'
 import { displayText, formatScore } from '../levelFormat'
 import { StarRow } from '../primitives'
 import { Sheet } from './Sheet'
+import { StarTotal } from './StarTotal'
+import { LockIcon } from '../icons'
 
 interface LevelSelectProps {
   onBack: () => void
@@ -12,18 +14,12 @@ interface LevelSelectProps {
 export function LevelSelect({ onBack, onSelect }: LevelSelectProps) {
   const highestUnlocked = useProgressStore((s) => s.highestUnlocked)
   const best = useProgressStore((s) => s.best)
-  const totalStars = Object.values(best).reduce((sum, b) => sum + b.stars, 0)
 
   return (
     <Sheet
       title="Select level"
       onBack={onBack}
-      aside={
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <StarRow stars={1} size={11} />
-          {totalStars} / {LEVELS.length * 3}
-        </span>
-      }
+      aside={<StarTotal />}
     >
       <div className="es-levels">
         {LEVELS.map((level) => {
@@ -45,22 +41,13 @@ export function LevelSelect({ onBack, onSelect }: LevelSelectProps) {
               <span className="es-level__foot">
                 <StarRow stars={record?.stars ?? 0} size={12} />
                 {record && record.score > 0 && <span>{formatScore(record.score)}</span>}
-                {current && <span style={{ color: 'var(--es-accent)' }}>NEXT</span>}
+                {current && <span className="es-level__next">Next</span>}
               </span>
-              {locked && <LockIcon />}
+              {locked && <LockIcon className="es-level__lock" />}
             </button>
           )
         })}
       </div>
     </Sheet>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg className="es-level__lock" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="5" y="11" width="14" height="10" rx="2" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </svg>
   )
 }

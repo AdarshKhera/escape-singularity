@@ -1,4 +1,5 @@
 import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { STAR_PATH } from './icons'
 
 type ButtonVariant = 'default' | 'primary' | 'ghost' | 'danger'
 
@@ -116,8 +117,6 @@ export function SettingRow({ name, hint, children }: SettingRowProps) {
     </div>
   )
 }
-
-const STAR_PATH = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z'
 
 interface StarRowProps {
   stars: number

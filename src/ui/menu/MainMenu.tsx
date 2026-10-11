@@ -11,6 +11,7 @@ import { MenuBackdrop } from './MenuBackdrop'
 import { LevelSelect } from './LevelSelect'
 import { Credits, HowToPlay } from './InfoScreens'
 import { Sheet } from './Sheet'
+import { StarTotal } from './StarTotal'
 import './menu.css'
 
 type MenuScreen = 'home' | 'levels' | 'hangar' | 'settings' | 'howto' | 'credits'
@@ -36,14 +37,14 @@ export function MainMenu({ onStartLevel }: MainMenuProps) {
       {screen === 'levels' && <LevelSelect onBack={goHome} onSelect={onStartLevel} />}
 
       {screen === 'hangar' && (
-        <Sheet title="Hangar" onBack={goHome}>
-          <ShipSelector selectedId={shipSkinId} onSelect={setShipSkinId} />
+        <Sheet title="Hangar" onBack={goHome} aside={<StarTotal />}>
+          <ShipSelector equippedId={shipSkinId} onEquip={setShipSkinId} />
         </Sheet>
       )}
 
       {screen === 'settings' && (
         <Sheet title="Settings" onBack={goHome}>
-          <div className="es-sheet__narrow">
+          <div className="es-sheet__content">
             <SettingsPanel allowReset />
           </div>
         </Sheet>
