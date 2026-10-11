@@ -1,116 +1,236 @@
-/* In-game HUD: one slim top-centre panel, nothing else competing with play. */
+/* In-game HUD: frameless and light so the game stays the star. Level, lives,
+   fuel and loadout stack top-left; the run to the next hole is a slim track
+   along the top centre. */
 
 .es-hud {
   position: absolute;
-  top: max(10px, calc(var(--es-safe-top) + 6px));
+  top: max(12px, calc(var(--es-safe-top) + 8px));
+  left: max(16px, calc(var(--es-safe-left) + 12px));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  font-family: var(--es-font-mono);
+  color: var(--es-ink);
+  pointer-events: none;
+}
+
+/* a soft dark falloff behind the text keeps it readable over bright nebulae
+   without drawing a box */
+.es-hud__scrim {
+  position: absolute;
+  inset: -22px -60px -26px -34px;
+  z-index: -1;
+  background: radial-gradient(ellipse at 28% 40%, rgba(2, 5, 12, 0.62), rgba(2, 5, 12, 0) 70%);
+}
+
+.es-hud__id {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  /* leaves the centre of the screen to the horizon track */
+  max-width: min(30vw, 230px);
+}
+
+.es-hud__num {
+  font-family: var(--es-font-display);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: transparent;
+  background: linear-gradient(180deg, #ffffff, #7fd4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 10px rgba(95, 208, 255, 0.45));
+}
+
+.es-hud__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.35;
+  font-family: var(--es-font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--es-ink-soft);
+  opacity: 0.85;
+}
+
+.es-hud__hearts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.es-hud__fuel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.es-hud__fuel-label {
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.es-hud__cells {
+  display: flex;
+  gap: 2px;
+}
+
+.es-hud__cells i {
+  width: 7px;
+  height: 11px;
+  border-radius: 1.5px;
+  background: rgba(255, 255, 255, 0.1);
+  transform: skewX(-18deg);
+  transition: background 120ms linear, box-shadow 120ms linear;
+}
+
+.es-hud__cells i.is-on {
+  background: linear-gradient(180deg, #8ff0d4, #3fd6ff);
+  box-shadow: 0 0 6px rgba(63, 214, 255, 0.55);
+}
+
+.es-hud__fuel--low .es-hud__cells i.is-on {
+  background: linear-gradient(180deg, #ffb37a, #ff5d5d);
+  box-shadow: 0 0 6px rgba(255, 93, 93, 0.6);
+}
+
+.es-hud__fuel--low .es-hud__fuel-label {
+  color: var(--es-danger);
+  opacity: 1;
+  animation: es-hud-low 900ms ease-in-out infinite alternate;
+}
+
+@keyframes es-hud-low {
+  from {
+    opacity: 0.45;
+  }
+}
+
+.es-hud__loadout {
+  display: flex;
+  gap: 6px;
+}
+
+.es-hud__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 179, 122, 0.35);
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--es-warm);
+}
+
+.es-hud__chip b {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.es-hud__chip--shield {
+  border-color: rgba(127, 233, 199, 0.4);
+  color: #8ff0d4;
+}
+
+/* the run to the next black hole */
+.es-hud__horizon {
+  position: absolute;
+  top: max(14px, calc(var(--es-safe-top) + 10px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-width: 260px;
-  padding: 8px 16px;
-  background: linear-gradient(180deg, rgba(12, 17, 28, 0.72), rgba(8, 11, 18, 0.58));
-  border: 1px solid var(--es-line);
-  border-radius: 7px;
-  box-shadow:
-    0 4px 22px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  gap: 7px;
+  width: min(30vw, 340px);
   font-family: var(--es-font-mono);
   color: var(--es-ink);
   pointer-events: none;
 }
 
-.es-hud__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-}
-
-.es-hud__level {
-  max-width: 46vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: var(--es-font-display);
-  font-weight: 700;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #5fd0ff;
-  text-shadow: 0 0 12px rgba(95, 208, 255, 0.4);
-}
-
-.es-hud__divider {
-  width: 1px;
-  height: 10px;
-  background: rgba(191, 227, 255, 0.2);
-}
-
-.es-hud__hearts {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.es-hud__fuel {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  width: 100%;
-}
-
-.es-hud__fuel-label {
+.es-hud__eta {
   font-size: 8px;
   font-weight: 500;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  opacity: 0.55;
-}
-
-.es-hud__fuel-track {
-  flex: 1;
-  min-width: 90px;
-  height: 5px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
-}
-
-.es-hud__fuel-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3fd6ff, #7fe9c7);
-  transition: width 0.15s linear;
-}
-
-.es-hud__fuel-fill--low {
-  background: linear-gradient(90deg, #ff5d5d, #ff9a6a);
-}
-
-.es-hud__countdown {
-  min-width: 36px;
-  font-size: 10px;
-  font-weight: 500;
-  text-align: right;
-  opacity: 0.7;
+  color: var(--es-muted);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
   font-variant-numeric: tabular-nums;
 }
 
-.es-hud__loadout {
-  display: flex;
-  gap: 10px;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
+.es-hud__eta b {
+  margin-right: 1px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--es-ink);
+}
+
+.es-hud__eta em {
+  margin-left: 8px;
+  font-style: normal;
   color: var(--es-warm);
-  opacity: 0.85;
+}
+
+.es-hud__track {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: rgba(191, 227, 255, 0.22);
+}
+
+.es-hud__trail {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, rgba(63, 214, 255, 0), #3fd6ff);
+  box-shadow: 0 0 8px rgba(63, 214, 255, 0.6);
+}
+
+.es-hud__ship {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  background: #ffffff;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  filter: drop-shadow(0 0 5px rgba(63, 214, 255, 0.9));
+}
+
+.es-hud__hole {
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  width: 11px;
+  height: 11px;
+  margin-top: -5.5px;
+  border-radius: 50%;
+  background: #000;
+  border: 1.5px solid rgba(255, 244, 232, 0.9);
+  box-shadow: 0 0 9px rgba(255, 179, 122, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .es-hud__fuel--low .es-hud__fuel-label {
+    animation: none;
+  }
 }
 
 .es-hud__hint {
@@ -129,7 +249,7 @@
 }
 
 .es-hud__hint--fire {
-  top: 84px;
+  top: 46px;
   left: 50%;
   transform: translateX(-50%);
   opacity: 0.5;

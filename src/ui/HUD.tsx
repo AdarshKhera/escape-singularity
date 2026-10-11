@@ -1,18 +1,21 @@
 import { useGameStore } from '../state/gameStore'
-import { FUEL_MAX, REFERENCE_SPEED } from '../levels/worldConfig'
-import { getLevel, computeLevelSegments, activeSegment } from '../levels/levels'
+import { FUEL_MAX } from '../levels/worldConfig'
+import { getLevel, computeLevelSegments } from '../levels/levels'
 import { PixelHeart } from './PixelHeart'
 import { displayText, levelName } from './levelFormat'
+import { gaugeCells, horizonProgress } from './hudMath'
 import './hud.css'
 
 const MAX_LIVES = 3
+const FUEL_CELLS = 14
 
 interface HUDProps {
   touchMode: boolean
 }
 
-// Deliberately minimal: level, lives, fuel with time-to-hole, loadout. Menus
-// and end-of-level screens carry everything else.
+// Deliberately light and frameless so the game stays the star: level and
+// lives with the fuel gauge top-left, the run to the next black hole as a slim
+// track along the top. Menus and end-of-level screens carry everything else.
 export function HUD({ touchMode }: HUDProps) {
   const shipWorldX = useGameStore((s) => s.shipWorldX)
   const lives = useGameStore((s) => s.lives)
@@ -26,44 +29,74 @@ export function HUD({ touchMode }: HUDProps) {
   const ammo = useGameStore((s) => s.ammo)
   const shieldCharges = useGameStore((s) => s.shieldCharges)
 
-  const segments = computeLevelSegments(getLevel(level))
-  const layout = activeSegment(segments, shipWorldX)
-  const secondsToHole = Math.max((layout.blackHoleX - shipWorldX) / REFERENCE_SPEED, 0)
-  const fuelPct = Math.max(0, Math.min(1, fuel / FUEL_MAX))
+  const progress = horizonProgress(computeLevelSegments(getLevel(level)), shipWorldX)
+  const fuelFraction = Math.max(0, Math.min(1, fuel / FUEL_MAX))
+  const litCells = gaugeCells(fuelFraction, FUEL_CELLS)
+  const lowFuel = fuelFraction < 0.25
   const live = status === 'playing' && !paused
 
   return (
     <>
       <div className="es-hud">
-        <div className="es-hud__top">
-          <span className="es-hud__level">
-            LV {level} · {levelName(level)}
-          </span>
-          <span className="es-hud__divider" />
-          <span className="es-hud__hearts" aria-label={`${lives} lives`}>
-            {Array.from({ length: MAX_LIVES }, (_, i) => (
-              <PixelHeart key={i} filled={i < lives} size={11} />
+        <div className="es-hud__scrim" aria-hidden="true" />
+
+        <div className="es-hud__id">
+          <span className="es-hud__num">{String(level).padStart(2, '0')}</span>
+          <span className="es-hud__name">{levelName(level)}</span>
+        </div>
+
+        <div className="es-hud__hearts" aria-label={`${lives} lives`}>
+          {Array.from({ length: MAX_LIVES }, (_, i) => (
+            <PixelHeart key={i} filled={i < lives} size={12} />
+          ))}
+        </div>
+
+        <div
+          className={`es-hud__fuel${lowFuel ? ' es-hud__fuel--low' : ''}`}
+          role="meter"
+          aria-label="Fuel"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(fuelFraction * 100)}
+        >
+          <span className="es-hud__fuel-label">Fuel</span>
+          <span className="es-hud__cells" aria-hidden="true">
+            {Array.from({ length: FUEL_CELLS }, (_, i) => (
+              <i key={i} className={i < litCells ? 'is-on' : undefined} />
             ))}
           </span>
         </div>
 
-        <div className="es-hud__fuel">
-          <span className="es-hud__fuel-label">Fuel</span>
-          <div className="es-hud__fuel-track">
-            <div
-              className={`es-hud__fuel-fill${fuelPct < 0.25 ? ' es-hud__fuel-fill--low' : ''}`}
-              style={{ width: `${fuelPct * 100}%` }}
-            />
-          </div>
-          <span className="es-hud__countdown">{secondsToHole.toFixed(1)}s</span>
-        </div>
-
         {(hasWeapon || shieldCharges > 0) && (
           <div className="es-hud__loadout">
-            {hasWeapon && <span>AMMO x{ammo}</span>}
-            {shieldCharges > 0 && <span>SHIELD UP</span>}
+            {hasWeapon && (
+              <span className="es-hud__chip">
+                <b>{ammo}</b> Rockets
+              </span>
+            )}
+            {shieldCharges > 0 && (
+              <span className="es-hud__chip es-hud__chip--shield">
+                <b>{shieldCharges}</b> Shield
+              </span>
+            )}
           </div>
         )}
+      </div>
+
+      <div className="es-hud__horizon" aria-label={`${progress.seconds.toFixed(0)} seconds to the black hole`}>
+        <span className="es-hud__eta">
+          <b>{progress.seconds.toFixed(1)}</b>s to horizon
+          {progress.holeCount > 1 && (
+            <em>
+              {progress.holeIndex}/{progress.holeCount}
+            </em>
+          )}
+        </span>
+        <span className="es-hud__track" aria-hidden="true">
+          <span className="es-hud__trail" style={{ width: `${progress.fraction * 100}%` }} />
+          <span className="es-hud__ship" style={{ left: `${progress.fraction * 100}%` }} />
+          <span className="es-hud__hole" />
+        </span>
       </div>
 
       {live && bannerMessage && <div className="es-hud__banner">{displayText(bannerMessage)}</div>}
