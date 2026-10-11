@@ -1,5 +1,6 @@
 import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { STAR_PATH } from './icons'
+import { starPopDelayMs } from './motion'
 
 type ButtonVariant = 'default' | 'primary' | 'ghost' | 'danger'
 
@@ -122,11 +123,6 @@ interface StarRowProps {
   stars: number
   size?: number
   animated?: boolean
-}
-
-/** Delay before star `index` pops on an animated row; sounds sync to this. */
-export function starPopDelayMs(index: number): number {
-  return 250 + index * 220
 }
 
 export function StarRow({ stars, size = 14, animated }: StarRowProps) {

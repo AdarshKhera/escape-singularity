@@ -35,3 +35,8 @@ export function useMotionAttribute(): void {
     document.documentElement.dataset.motion = reduced ? 'reduced' : 'full'
   }, [reduced])
 }
+
+/** Delay before star `index` pops on an animated star row; sounds sync to this. */
+export function starPopDelayMs(index: number): number {
+  return 250 + index * 220
+}

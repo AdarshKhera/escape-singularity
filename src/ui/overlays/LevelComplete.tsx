@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Button, Overlay, StarRow, starPopDelayMs } from '../primitives'
+import { Button, Overlay, StarRow } from '../primitives'
 import { formatDuration, formatScore } from '../levelFormat'
 import { playUiSound } from '../audioAdapter'
-import { useReducedMotion } from '../motion'
+import { starPopDelayMs, useReducedMotion } from '../motion'
 import { useCountUp } from '../useCountUp'
 import type { LevelResultView, RunStatsView } from '../gameStoreAdapters'
-import type { Celebration } from '../celebrationStore'
-import { Rewards, hasRewards } from './Rewards'
+import { hasRewards, type Celebration } from '../celebrationStore'
+import { Rewards } from './Rewards'
 
 interface LevelCompleteProps {
   levelLabel: string

@@ -9,10 +9,6 @@ import { CheckIcon } from '../icons'
 import { getShip } from '../shipAdapter'
 import type { Celebration } from '../celebrationStore'
 
-export function hasRewards(celebration: Celebration | null): boolean {
-  return celebration !== null && (celebration.newShipIds.length > 0 || celebration.newAchievementIds.length > 0)
-}
-
 // What this clear earned beyond stars: a freshly unlocked ship to equip on
 // the spot, and any awards that just completed.
 export function Rewards({ celebration }: { celebration: Celebration }) {

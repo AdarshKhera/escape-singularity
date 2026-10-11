@@ -140,6 +140,7 @@
 .es-sheet__body {
   flex: 1;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(191, 227, 255, 0.25) transparent;

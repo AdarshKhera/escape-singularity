@@ -19,3 +19,7 @@ export const useCelebrationStore = create<CelebrationState>((set) => ({
   celebration: null,
   setCelebration: (celebration) => set({ celebration }),
 }))
+
+export function hasRewards(celebration: Celebration | null): boolean {
+  return celebration !== null && (celebration.newShipIds.length > 0 || celebration.newAchievementIds.length > 0)
+}

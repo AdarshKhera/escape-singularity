@@ -425,3 +425,10 @@
     transform: translate(-50%, 10px) scale(0.96);
   }
 }
+
+/* keyboard play has the track picker bottom-left instead of touch controls */
+.es-stage[data-input='keyboard'] .es-intro,
+.es-stage[data-input='keyboard'] .es-coach {
+  bottom: max(58px, 8vh);
+  max-width: min(460px, calc(100vw - 32px));
+}
