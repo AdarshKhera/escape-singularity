@@ -141,6 +141,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(191, 227, 255, 0.25) transparent;
   overscroll-behavior: contain;
   touch-action: pan-y;
   padding: var(--es-space-2) 2px var(--es-space-2);
@@ -531,6 +533,35 @@
 @media (max-height: 380px) {
   .es-home__tagline {
     display: none;
+  }
+}
+
+/* landscape phones: all twelve levels on one screen, no scrolling */
+@media (max-height: 440px) and (min-width: 600px) {
+  .es-levels {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .es-level {
+    min-height: 0;
+    padding: 9px 12px 8px;
+    gap: 2px;
+  }
+
+  .es-level__name,
+  .es-level__sub {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .es-level__foot {
+    padding-top: 2px;
+  }
+
+  .es-level__lock {
+    top: 9px;
   }
 }
 

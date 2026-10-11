@@ -78,7 +78,7 @@ function ControlRows() {
   const touchControls = useSettingsStore((s) => s.touchControls)
   const setTouchControls = useSettingsStore((s) => s.setTouchControls)
   return (
-    <SettingRow name="Touch controls" hint="Auto shows them on touch screens">
+    <SettingRow name="Touch controls" hint="Auto: on for touch screens">
       <Segmented label="Touch controls" value={touchControls} options={TOUCH_OPTIONS} onChange={setTouchControls} />
     </SettingRow>
   )

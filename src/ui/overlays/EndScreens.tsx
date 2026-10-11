@@ -35,7 +35,7 @@ interface GameOverProps {
 
 export function GameOverScreen({ levelLabel, onRetry, onMenu }: GameOverProps) {
   return (
-    <Overlay label="Game over" width={380}>
+    <Overlay label="Game over" width={420}>
       <div className="es-overlay__title es-overlay__title--danger">GAME OVER</div>
       <span className="es-label">Out of ships on {levelLabel}</span>
       <div className="es-actions">

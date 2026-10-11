@@ -22,7 +22,7 @@ export function PauseMenu({ levelLabel, inputMode, onResume, onRestart, onQuit }
           SETTINGS
         </div>
         <SettingsPanel />
-        <Button block onClick={() => setShowSettings(false)}>
+        <Button block data-sound="back" onClick={() => setShowSettings(false)}>
           Back
         </Button>
       </Overlay>
