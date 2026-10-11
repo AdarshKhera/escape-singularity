@@ -1,3 +1,4 @@
+import { audioEngine } from '../audio/AudioEngine'
 import { addTrauma, triggerFlash } from './feedback'
 import { PC } from './particles'
 import type { GameWorld } from './world'
@@ -65,6 +66,7 @@ export function stepFlourish(
   realDt: number,
 ): number {
   const v = world.visuals
+  if (v.warpIn === 0) audioEngine.playSfx('warpIn')
   v.warpIn += realDt
   if (!v.warpArrived && v.warpIn >= WARP_IN_SECONDS * 0.8) {
     v.warpArrived = true
@@ -74,6 +76,7 @@ export function stepFlourish(
   }
   if (v.exiting) {
     if (v.exit === 0) {
+      audioEngine.playSfx('warpOut')
       triggerFlash(world.feedback, EXIT_FLASH, '235,245,255')
       addTrauma(world.feedback, 0.2)
     }
